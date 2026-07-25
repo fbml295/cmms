@@ -2415,31 +2415,26 @@
 
                 <div class="config-section">
                     <div class="config-section-title">☁️ Google Drive — làm việc online</div>
-                    <p class="config-hint">
-                        Hệ thống sẽ đọc/ghi dữ liệu trực tiếp từ 1 thư mục trên Google Drive, có cấu trúc giống hệt bản offline:
-                        thư mục con <strong>data</strong> (file Excel), <strong>logdata</strong> (nhật ký bảo trì), <strong>technician</strong> (nhân sự) — nếu chưa có, hệ thống sẽ tự tạo.
-                        Client ID đã được cấu hình sẵn trong hệ thống — chỉ cần đăng nhập Google là dùng được, không phải cấu hình gì thêm trên từng máy.
-                    </p>
-                    <ol class="config-steps">
-                        <li>Bấm <strong>"🔗 Đăng nhập bằng Google"</strong> bên dưới, chọn đúng tài khoản Gmail của bạn.</li>
-                        <li>Chỉ những Gmail đã được thêm vào danh sách <strong>Test users</strong> (OAuth consent screen) mới đăng nhập được — liên hệ quản trị viên hệ thống nếu bị chặn.</li>
-                        <li><strong>Lưu ý quan trọng:</strong> ngoài việc nằm trong Test users, Gmail của bạn còn phải được <strong>chia sẻ (share) quyền truy cập</strong> vào đúng thư mục dự án trên Google Drive thì mới đọc/ghi được dữ liệu — quản trị viên cần share folder MDF1_CMMS / MDF2_CMMS cho từng người dùng.</li>
-                        <li>Chọn dự án cần làm việc ở danh sách bên dưới, rồi bấm "🚀 Kích hoạt thư mục dự án".</li>
-                    </ol>
 
-                    <div class="config-form-row">
+                    <div class="config-actions-row">
+                        <button class="btn btn-violet" onclick="connectGoogleDrive()">🔗 Đăng nhập bằng Google</button>
+                        <button class="btn btn-slate" onclick="disconnectGoogleDrive()">⛔ Ngắt kết nối / Về chế độ offline</button>
+                    </div>
+                    <div id="driveLoginStatus" class="log-dir-status">⚪ Chưa đăng nhập Google.</div>
+
+                    <div class="config-form-row" style="margin-top:10px;">
                         <div class="config-form-field">
                             <label>Chọn dự án / thư mục Google Drive</label>
-                            <select id="cfg_driveFolderSelect" class="search-input"></select>
+                            <select id="cfg_driveFolderSelect" class="search-input" onchange="onDriveFolderSelectChange()"></select>
                         </div>
                     </div>
                     <div class="config-actions-row">
-                        <button class="btn btn-violet" onclick="connectGoogleDrive()">🔗 Đăng nhập bằng Google</button>
                         <button class="btn btn-sky" onclick="activateGoogleDriveProject()">🚀 Kích hoạt thư mục dự án</button>
-                        <button class="btn btn-slate" onclick="disconnectGoogleDrive()">⛔ Ngắt kết nối / Về chế độ offline</button>
+                        <span id="cfg_driveFolderStatus" class="log-dir-status" style="display:inline-block;">⚪ Chưa kích hoạt</span>
                     </div>
-                    <div id="driveConnectStatus" class="log-dir-status">Chưa đăng nhập Google Drive.</div>
+                    <div id="driveConnectStatus" class="log-dir-status"></div>
                 </div>
+
 
                 <div class="config-section">
                     <div class="config-section-title">🤖 Gemini AI — trợ lý chatbot</div>
@@ -2453,9 +2448,11 @@
                         <div class="config-form-field">
                             <label>Model</label>
                             <select id="cfg_geminiModel" class="search-input">
-                                <option value="gemini-2.5-flash">gemini-2.5-flash (nhanh, khuyến nghị)</option>
-                                <option value="gemini-2.5-pro">gemini-2.5-pro (chất lượng cao)</option>
-                                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                                <option value="auto">🔍 Tự động chọn model khả dụng (khuyến nghị)</option>
+                                <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+                                <option value="gemini-3-pro-preview">gemini-3-pro-preview</option>
+                                <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+                                <option value="gemini-3.6-flash">gemini-3.6-flash</option>
                             </select>
                         </div>
                     </div>
@@ -2530,6 +2527,9 @@
         let driveFolderId = '';
         let driveAccessToken = ''; // Token OAuth, chỉ tồn tại trong phiên làm việc hiện tại (không lưu lại vì lý do bảo mật)
         let driveTokenClient = null;
+        let driveUserEmail = '';
+        let driveUserName = '';
+        let driveActiveFolderId = ''; // Folder ID đã kích hoạt thành công (khác với driveFolderId đang chọn ở dropdown)
         let driveDataFolderId = '';
         let driveLogFolderId = '';
         let driveTechnicianFolderId = '';
@@ -2540,7 +2540,11 @@
         let driveRcaFolderId = '';
         let driveWorkOrdersFolderId = '';
         let geminiApiKey = '';
-        let geminiModel = 'gemini-2.5-flash';
+        // Danh sách model Gemini 3.x để tự động dò — model nào gọi API thành công trước sẽ được dùng.
+        // Cập nhật danh sách này khi Google phát hành model mới hoặc ngừng hỗ trợ model cũ.
+        const GEMINI_CANDIDATE_MODELS = ['gemini-3-flash-preview', 'gemini-3-pro-preview', 'gemini-3.5-flash', 'gemini-3.6-flash'];
+        let geminiModelMode = 'auto'; // 'auto' = tự dò model khả dụng | hoặc tên 1 model cụ thể do người dùng chọn tay
+        let geminiModel = 'gemini-3-flash-preview'; // Model đang thực sự dùng để gọi API (được cập nhật khi dò tự động)
         let chatbotHistory = []; // [{role: 'user'|'model', text: '...'}]
 
         let adhocPlan = []; // Kế hoạch bảo trì đột xuất (không theo chu kỳ ngày/tháng/năm)
@@ -8947,7 +8951,8 @@
             // Client ID đã khoá cứng ở DRIVE_OAUTH_CLIENT_ID, không đọc/ghi localStorage nữa.
             driveClientId = DRIVE_OAUTH_CLIENT_ID;
             geminiApiKey = localStorage.getItem('cfg_geminiApiKey') || '';
-            geminiModel = localStorage.getItem('cfg_geminiModel') || 'gemini-2.5-flash';
+            geminiModelMode = localStorage.getItem('cfg_geminiModelMode') || 'auto';
+            geminiModel = localStorage.getItem('cfg_geminiModel') || 'gemini-3-flash-preview';
 
             // Dựng dropdown chọn dự án từ DRIVE_PROJECT_FOLDERS
             const selectEl = document.getElementById('cfg_driveFolderSelect');
@@ -8967,10 +8972,12 @@
             const elGeminiKey = document.getElementById('cfg_geminiApiKey');
             const elGeminiModel = document.getElementById('cfg_geminiModel');
             if (elGeminiKey) elGeminiKey.value = geminiApiKey;
-            if (elGeminiModel) elGeminiModel.value = geminiModel;
+            if (elGeminiModel) elGeminiModel.value = geminiModelMode;
 
-            const driveStatusEl = document.getElementById('driveConnectStatus');
-            if (driveStatusEl) driveStatusEl.textContent = 'Chưa đăng nhập Google Drive.';
+            const loginStatusEl = document.getElementById('driveLoginStatus');
+            if (loginStatusEl) loginStatusEl.textContent = '⚪ Chưa đăng nhập Google.';
+            const folderBadgeEl = document.getElementById('cfg_driveFolderStatus');
+            if (folderBadgeEl) folderBadgeEl.textContent = '⚪ Chưa kích hoạt';
 
             const geminiStatusEl = document.getElementById('geminiConnectStatus');
             if (geminiStatusEl) {
@@ -8990,39 +8997,38 @@
 
         function saveGeminiConfig() {
             geminiApiKey = document.getElementById('cfg_geminiApiKey')?.value.trim() || '';
-            geminiModel = document.getElementById('cfg_geminiModel')?.value || 'gemini-2.5-flash';
+            geminiModelMode = document.getElementById('cfg_geminiModel')?.value || 'auto';
             localStorage.setItem('cfg_geminiApiKey', geminiApiKey);
-            localStorage.setItem('cfg_geminiModel', geminiModel);
+            localStorage.setItem('cfg_geminiModelMode', geminiModelMode);
+            if (geminiModelMode !== 'auto') {
+                geminiModel = geminiModelMode; // Người dùng chọn cố định 1 model, không dò tự động nữa
+                localStorage.setItem('cfg_geminiModel', geminiModel);
+            }
             const statusEl = document.getElementById('geminiConnectStatus');
             if (!geminiApiKey) {
                 if (statusEl) statusEl.textContent = 'Vui lòng nhập Gemini API Key.';
                 return;
             }
-            if (statusEl) statusEl.innerHTML = `💾 Đã lưu cấu hình Gemini (model: <strong>${geminiModel}</strong>). Bấm "✅ Kiểm tra kết nối" để xác nhận hoạt động.`;
+            const modelLabel = geminiModelMode === 'auto' ? 'tự động dò model khả dụng' : geminiModelMode;
+            if (statusEl) statusEl.innerHTML = `💾 Đã lưu cấu hình Gemini (${modelLabel}). Bấm "✅ Kiểm tra kết nối" để xác nhận hoạt động.`;
         }
 
         async function testGeminiConnection() {
             if (!geminiApiKey) { alert('Vui lòng nhập và lưu Gemini API Key trước!'); return; }
             const statusEl = document.getElementById('geminiConnectStatus');
-            if (statusEl) statusEl.innerHTML = '⏳ Đang kiểm tra kết nối...';
+            if (statusEl) statusEl.innerHTML = geminiModelMode === 'auto' ? '⏳ Đang dò model Gemini khả dụng...' : '⏳ Đang kiểm tra kết nối...';
             try {
                 const reply = await callGeminiAPI([{ role: 'user', text: 'Xin chào, hãy trả lời ngắn gọn "Kết nối thành công" bằng tiếng Việt.' }]);
-                if (statusEl) statusEl.innerHTML = `🟢 Kết nối thành công! Phản hồi mẫu: <em>${rcaEsc(reply.slice(0, 150))}</em>`;
+                if (statusEl) statusEl.innerHTML = `🟢 Kết nối thành công (model: <strong>${geminiModel}</strong>)! Phản hồi mẫu: <em>${rcaEsc(reply.slice(0, 150))}</em>`;
             } catch (err) {
                 if (statusEl) statusEl.innerHTML = `🔴 Lỗi kết nối: ${rcaEsc(err.message)}`;
             }
         }
 
         // ---------- GEMINI API ----------
-        async function callGeminiAPI(messages) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
-            const contents = messages.map(m => ({ role: m.role === 'model' ? 'model' : 'user', parts: [{ text: m.text }] }));
-            const body = {
-                contents,
-                systemInstruction: {
-                    parts: [{ text: 'Bạn là trợ lý AI tiếng Việt cho hệ thống quản lý bảo trì nhà máy (CMMS). Trả lời ngắn gọn, thực tế, đúng trọng tâm, ưu tiên tiếng Việt trừ khi được hỏi bằng ngôn ngữ khác.' }]
-                }
-            };
+        async function callGeminiModelOnce(modelId, contents, systemInstructionText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+            const body = { contents, systemInstruction: { parts: [{ text: systemInstructionText }] } };
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -9033,8 +9039,35 @@
                 throw new Error(errData?.error?.message || `HTTP ${res.status}`);
             }
             const data = await res.json();
-            const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '(Không có phản hồi)';
-            return text;
+            return data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '(Không có phản hồi)';
+        }
+
+        async function callGeminiAPI(messages) {
+            const contents = messages.map(m => ({ role: m.role === 'model' ? 'model' : 'user', parts: [{ text: m.text }] }));
+            const sys = 'Bạn là trợ lý AI tiếng Việt cho hệ thống quản lý bảo trì nhà máy (CMMS). Trả lời ngắn gọn, thực tế, đúng trọng tâm, ưu tiên tiếng Việt trừ khi được hỏi bằng ngôn ngữ khác.';
+
+            if (geminiModelMode !== 'auto') {
+                return await callGeminiModelOnce(geminiModelMode, contents, sys);
+            }
+
+            // Chế độ tự động: ưu tiên thử model đã từng hoạt động (nếu có) để trả lời nhanh, nếu lỗi mới dò lần lượt các model còn lại
+            const tryOrder = geminiModel && GEMINI_CANDIDATE_MODELS.includes(geminiModel)
+                ? [geminiModel, ...GEMINI_CANDIDATE_MODELS.filter(m => m !== geminiModel)]
+                : GEMINI_CANDIDATE_MODELS;
+            let lastErr = null;
+            for (const modelId of tryOrder) {
+                try {
+                    const text = await callGeminiModelOnce(modelId, contents, sys);
+                    if (modelId !== geminiModel) {
+                        geminiModel = modelId;
+                        localStorage.setItem('cfg_geminiModel', geminiModel);
+                    }
+                    return text;
+                } catch (err) {
+                    lastErr = err;
+                }
+            }
+            throw lastErr || new Error('Không có model Gemini nào trong danh sách hoạt động được với API Key này.');
         }
 
         // ---------- CHATBOT: GIAO DIỆN WIDGET NỔI ----------
@@ -9108,26 +9141,51 @@
                 alert('Không tải được thư viện đăng nhập Google (Google Identity Services). Vui lòng kiểm tra kết nối Internet rồi thử lại.');
                 return;
             }
-            const statusEl = document.getElementById('driveConnectStatus');
-            if (statusEl) statusEl.innerHTML = '⏳ Đang mở cửa sổ đăng nhập Google...';
+            const loginStatusEl = document.getElementById('driveLoginStatus');
+            if (loginStatusEl) loginStatusEl.textContent = '⏳ Đang mở cửa sổ đăng nhập Google...';
 
             try {
                 driveTokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: driveClientId,
-                    scope: 'https://www.googleapis.com/auth/drive',
-                    callback: (tokenResponse) => {
+                    scope: 'https://www.googleapis.com/auth/drive email profile',
+                    callback: async (tokenResponse) => {
                         if (tokenResponse && tokenResponse.access_token) {
                             driveAccessToken = tokenResponse.access_token;
-                            if (statusEl) statusEl.innerHTML = `🟢 Đã đăng nhập Google Drive thành công. Bấm "🚀 Kích hoạt thư mục dự án" để nạp dữ liệu.`;
+                            try {
+                                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                    headers: { 'Authorization': 'Bearer ' + driveAccessToken }
+                                });
+                                if (res.ok) {
+                                    const info = await res.json();
+                                    driveUserEmail = info.email || '';
+                                    driveUserName = info.name || '';
+                                }
+                            } catch (e) { /* không chặn luồng nếu lấy thông tin tài khoản thất bại */ }
+                            if (loginStatusEl) {
+                                const displayName = driveUserName || driveUserEmail || 'tài khoản Google';
+                                loginStatusEl.innerHTML = `🟢 Đăng nhập thành công: <strong>${displayName}</strong>${driveUserEmail && driveUserName ? ' (' + driveUserEmail + ')' : ''}`;
+                            }
                         } else {
-                            if (statusEl) statusEl.innerHTML = `🔴 Đăng nhập thất bại hoặc bị hủy.`;
+                            if (loginStatusEl) loginStatusEl.textContent = '🔴 Đăng nhập thất bại hoặc bị hủy.';
                         }
                     }
                 });
                 driveTokenClient.requestAccessToken({ prompt: '' });
             } catch (err) {
-                if (statusEl) statusEl.innerHTML = `🔴 Lỗi khởi tạo đăng nhập: ${err.message}`;
+                if (loginStatusEl) loginStatusEl.textContent = `🔴 Lỗi khởi tạo đăng nhập: ${err.message}`;
             }
+        }
+
+        // Khi người dùng đổi lựa chọn dự án ở dropdown mà chưa bấm Kích hoạt lại
+        function onDriveFolderSelectChange() {
+            const selectEl = document.getElementById('cfg_driveFolderSelect');
+            const badgeEl = document.getElementById('cfg_driveFolderStatus');
+            const newVal = selectEl?.value || '';
+            if (badgeEl) {
+                badgeEl.textContent = (newVal && newVal === driveActiveFolderId) ? '🟢 Đã kích hoạt' : '⚪ Chưa kích hoạt';
+            }
+            const driveStatusEl = document.getElementById('driveConnectStatus');
+            if (driveStatusEl && newVal !== driveActiveFolderId) driveStatusEl.innerHTML = '';
         }
 
         // ---------- GOOGLE DRIVE: HÀM GỌI API DÙNG CHUNG ----------
@@ -9264,6 +9322,9 @@
             appMode = 'local';
             driveAccessToken = '';
             driveTokenClient = null;
+            driveUserEmail = '';
+            driveUserName = '';
+            driveActiveFolderId = '';
             driveDataFolderId = '';
             driveLogFolderId = '';
             driveTechnicianFolderId = '';
@@ -9273,6 +9334,11 @@
             driveCompanyInfoFolderId = '';
             driveRcaFolderId = '';
             driveWorkOrdersFolderId = '';
+
+            const loginStatusEl = document.getElementById('driveLoginStatus');
+            if (loginStatusEl) loginStatusEl.textContent = '⚪ Chưa đăng nhập Google.';
+            const badgeEl = document.getElementById('cfg_driveFolderStatus');
+            if (badgeEl) badgeEl.textContent = '⚪ Chưa kích hoạt';
 
             const statusEl = document.getElementById('driveConnectStatus');
             if (statusEl) statusEl.innerHTML = '⚪ Đã ngắt kết nối Google Drive. Hệ thống đang ở chế độ offline (ổ cứng cục bộ).';
@@ -9287,10 +9353,12 @@
         // ---------- GOOGLE DRIVE: KÍCH HOẠT THƯ MỤC DỰ ÁN (data / logdata / technician) ----------
         async function activateGoogleDriveProject() {
             const statusEl = document.getElementById('driveConnectStatus');
+            const badgeEl = document.getElementById('cfg_driveFolderStatus');
             readSelectedDriveFolder();
             if (!driveAccessToken) { alert('Vui lòng bấm "🔗 Đăng nhập bằng Google" trước!'); return; }
             if (!driveFolderId) { alert('Vui lòng chọn dự án / thư mục Google Drive trước!'); return; }
             if (statusEl) statusEl.innerHTML = '⏳ Đang kích hoạt thư mục dự án trên Google Drive...';
+            if (badgeEl) badgeEl.textContent = '⏳ Đang kích hoạt...';
 
             try {
                 const rootRes = await driveApiFetch(`https://www.googleapis.com/drive/v3/files/${driveFolderId}?fields=id,name`);
@@ -9369,9 +9437,11 @@
                 if (dWorkOrders) { workOrders = dWorkOrders; localStorage.setItem('workOrders', JSON.stringify(workOrders)); renderWorkOrderPage(); }
 
                 appMode = 'drive';
+                driveActiveFolderId = driveFolderId;
                 updatePersonnelDirStatusUI(true, `technician (Google Drive — "${rootInfo.name}")`);
                 updateLogDirStatusUI(true, `logdata (Google Drive — "${rootInfo.name}")`);
 
+                if (badgeEl) badgeEl.textContent = '🟢 Đã kích hoạt';
                 if (statusEl) {
                     statusEl.innerHTML = `🟢 Đang làm việc ONLINE với thư mục Google Drive: <strong>${rootInfo.name}</strong><br>📊 Dữ liệu: ${validExcel.length} file từ "data" &nbsp;•&nbsp; 📜 Nhật ký: "logdata" &nbsp;•&nbsp; 👥 Nhân sự: "technician" &nbsp;•&nbsp; 🗂️ Kế hoạch / RCA / Work Order: đã đồng bộ`;
                 }
@@ -9382,6 +9452,7 @@
                     switchMainTab('dashboard');
                 }
             } catch (err) {
+                if (badgeEl) badgeEl.textContent = '🔴 Kích hoạt lỗi';
                 if (statusEl) statusEl.innerHTML = `🔴 Lỗi: ${err.message}`;
                 alert('Không thể kích hoạt thư mục dự án Drive: ' + err.message);
             }
