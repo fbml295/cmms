@@ -9156,8 +9156,13 @@
             return (data.files && data.files[0]) || null;
         }
 
-        async function driveDownloadFileBlob(fileId) {
-            const res = await driveApiFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+        async function driveDownloadFileBlob(fileId, mimeType) {
+            // File Google Sheets "gốc" (tạo/lưu trực tiếp trên Drive, không phải .xlsx thật) không hỗ trợ tải
+            // trực tiếp bằng alt=media — phải dùng endpoint export để chuyển sang định dạng xlsx trước.
+            const url = mimeType === 'application/vnd.google-apps.spreadsheet'
+                ? `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=${encodeURIComponent('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}`
+                : `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+            const res = await driveApiFetch(url);
             if (!res.ok) throw new Error('Không tải được file từ Drive (HTTP ' + res.status + ')');
             return await res.blob();
         }
@@ -9245,10 +9250,12 @@
                 if (!rootRes.ok) throw new Error('Không truy cập được Folder ID đã nhập (kiểm tra lại ID hoặc quyền chia sẻ).');
                 const rootInfo = await rootRes.json();
 
-                // 1. Thư mục con "data" — file Excel dữ liệu
+                // 1. Thư mục con "data" — file Excel dữ liệu (chấp nhận cả .xlsx/.xls thật lẫn Google Sheets gốc)
                 driveDataFolderId = await driveFindOrCreateFolder(driveFolderId, 'data');
                 const filesInData = await driveListFilesInFolder(driveDataFolderId);
-                const validExcel = filesInData.filter(f => /\.(xlsx|xls)$/i.test(f.name));
+                const validExcel = filesInData.filter(f =>
+                    /\.(xlsx|xls)$/i.test(f.name) || f.mimeType === 'application/vnd.google-apps.spreadsheet'
+                );
 
                 if (validExcel.length === 0) {
                     if (statusEl) statusEl.innerHTML = `⚠️ Đã kết nối thư mục "<strong>${rootInfo.name}</strong>" nhưng chưa có file Excel nào trong thư mục con "data" trên Drive. Vui lòng tải file dữ liệu (.xlsx) lên đó rồi bấm lại "🚀 Kích hoạt thư mục dự án".`;
@@ -9258,9 +9265,16 @@
                 loadedFiles = [];
                 fileListContainer.innerHTML = `<div class="italic text-center">Đang tải dữ liệu từ Google Drive...</div>`;
                 for (const f of validExcel) {
-                    const blob = await driveDownloadFileBlob(f.id);
-                    const file = new File([blob], f.name, { type: blob.type });
-                    await processAndStoreFile(file, null, f.id);
+                    try {
+                        const blob = await driveDownloadFileBlob(f.id, f.mimeType);
+                        const file = new File([blob], f.name, { type: blob.type });
+                        await processAndStoreFile(file, null, f.id);
+                    } catch (fileErr) {
+                        console.error(`Lỗi tải/phân tích file "${f.name}" từ Drive:`, fileErr);
+                    }
+                }
+                if (loadedFiles.length === 0) {
+                    throw new Error(`Có ${validExcel.length} file trong thư mục "data" nhưng không file nào đọc được (kiểm tra lại định dạng file, hoặc mở Console trình duyệt (F12) để xem chi tiết lỗi từng file).`);
                 }
                 const titleEl = document.getElementById('fileListSectionTitle');
                 if (titleEl) titleEl.textContent = '📄 Tệp dữ liệu đang mở (Google Drive)';
