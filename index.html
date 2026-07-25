@@ -2533,6 +2533,12 @@
         let driveDataFolderId = '';
         let driveLogFolderId = '';
         let driveTechnicianFolderId = '';
+        let driveMaintPlanFolderId = '';
+        let driveAdhocPlanFolderId = '';
+        let driveAdhocCampaignFolderId = '';
+        let driveCompanyInfoFolderId = '';
+        let driveRcaFolderId = '';
+        let driveWorkOrdersFolderId = '';
         let geminiApiKey = '';
         let geminiModel = 'gemini-2.5-flash';
         let chatbotHistory = []; // [{role: 'user'|'model', text: '...'}]
@@ -2809,6 +2815,7 @@
         // --- LOCAL STORAGE: KẾ HOẠCH BẢO TRÌ ---
         function savePlanToLocalStorage() {
             localStorage.setItem('maintPlan', JSON.stringify(maintPlan));
+            if (appMode === 'drive' && driveMaintPlanFolderId) driveSyncJsonFile(driveMaintPlanFolderId, 'maintPlan.json', maintPlan);
         }
 
         function loadPlanFromLocalStorage() {
@@ -3922,6 +3929,7 @@
 
         function saveCompanyInfo(info) {
             localStorage.setItem('companyInfo', JSON.stringify(info));
+            if (appMode === 'drive' && driveCompanyInfoFolderId) driveSyncJsonFile(driveCompanyInfoFolderId, 'companyInfo.json', info);
         }
 
         // Mục 6: tiêu đề chính "HỆ THỐNG QUẢN LÝ BẢO TRÌ CMMS - {Dây chuyền}"
@@ -4020,6 +4028,7 @@
         function saveAdhocPlanToLocalStorage() {
             localStorage.setItem('adhocPlan', JSON.stringify(adhocPlan));
             writeAdhocPlanBackupFile();
+            if (appMode === 'drive' && driveAdhocPlanFolderId) driveSyncJsonFile(driveAdhocPlanFolderId, 'adhocPlan.json', adhocPlan);
         }
 
         function loadAdhocPlanFromLocalStorage() {
@@ -4037,6 +4046,7 @@
         // --- CẤU HÌNH ĐỢT BẢO TRÌ ĐỘT XUẤT: NGÀY BẮT ĐẦU/KẾT THÚC + TIMELINE KHUNG GIỜ (MỖI Ô = 1H) ---
         function saveAdhocCampaignToLocalStorage() {
             localStorage.setItem('adhocCampaign', JSON.stringify(adhocCampaign));
+            if (appMode === 'drive' && driveAdhocCampaignFolderId) driveSyncJsonFile(driveAdhocCampaignFolderId, 'adhocCampaign.json', adhocCampaign);
         }
 
         function loadAdhocCampaignFromLocalStorage() {
@@ -4052,6 +4062,7 @@
 
         function saveAdhocCampaignHistory() {
             localStorage.setItem('adhocCampaignHistory', JSON.stringify(adhocCampaignHistory));
+            if (appMode === 'drive' && driveAdhocCampaignFolderId) driveSyncJsonFile(driveAdhocCampaignFolderId, 'adhocCampaignHistory.json', adhocCampaignHistory);
         }
 
         function loadAdhocCampaignHistory() {
@@ -7376,6 +7387,7 @@
 
         function saveRcaRecordsToStorage() {
             localStorage.setItem('rcaRecords', JSON.stringify(rcaRecords));
+            if (appMode === 'drive' && driveRcaFolderId) driveSyncJsonFile(driveRcaFolderId, 'rcaRecords.json', rcaRecords);
         }
 
         function loadRcaRecordsFromStorage() {
@@ -8130,7 +8142,10 @@
             try { const s = localStorage.getItem('workOrders'); if (s) workOrders = JSON.parse(s); } catch(e) {}
         }
         function saveWorkOrdersToStorage() {
-            try { localStorage.setItem('workOrders', JSON.stringify(workOrders)); } catch(e) {}
+            try {
+                localStorage.setItem('workOrders', JSON.stringify(workOrders));
+                if (appMode === 'drive' && driveWorkOrdersFolderId) driveSyncJsonFile(driveWorkOrdersFolderId, 'workOrders.json', workOrders);
+            } catch(e) {}
         }
 
         function woGenId() { return 'WO' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase(); }
@@ -9212,6 +9227,32 @@
             return await res.json();
         }
 
+        // ---------- GOOGLE DRIVE: GHI / ĐỌC FILE JSON DÙNG CHUNG (cho các module dữ liệu phụ) ----------
+        async function driveSyncJsonFile(folderId, filename, dataObj) {
+            if (!folderId) return;
+            try {
+                const existing = await driveFindFileByName(folderId, filename);
+                await driveUploadFile(folderId, filename, JSON.stringify(dataObj), 'application/json', existing ? existing.id : null);
+            } catch (err) {
+                console.error(`Lỗi ghi "${filename}" lên Google Drive:`, err);
+            }
+        }
+
+        async function driveLoadJsonFile(folderId, filename) {
+            if (!folderId) return null;
+            try {
+                const existing = await driveFindFileByName(folderId, filename);
+                if (!existing) return null;
+                const blob = await driveDownloadFileBlob(existing.id);
+                const text = (await blob.text()).replace(/^\uFEFF/, '');
+                if (!text.trim()) return null;
+                return JSON.parse(text);
+            } catch (err) {
+                console.error(`Lỗi đọc "${filename}" từ Google Drive:`, err);
+                return null;
+            }
+        }
+
         // Ngắt kết nối Drive: quay lại chế độ làm việc offline (ổ cứng cục bộ), không xóa cấu hình đã lưu
         function disconnectGoogleDrive() {
             if (appMode !== 'drive' && !driveAccessToken) {
@@ -9226,6 +9267,12 @@
             driveDataFolderId = '';
             driveLogFolderId = '';
             driveTechnicianFolderId = '';
+            driveMaintPlanFolderId = '';
+            driveAdhocPlanFolderId = '';
+            driveAdhocCampaignFolderId = '';
+            driveCompanyInfoFolderId = '';
+            driveRcaFolderId = '';
+            driveWorkOrdersFolderId = '';
 
             const statusEl = document.getElementById('driveConnectStatus');
             if (statusEl) statusEl.innerHTML = '⚪ Đã ngắt kết nối Google Drive. Hệ thống đang ở chế độ offline (ổ cứng cục bộ).';
@@ -9288,12 +9335,45 @@
                 driveTechnicianFolderId = await driveFindOrCreateFolder(driveFolderId, 'technician');
                 await loadPersonnelCsvFromDrive();
 
+                // 4. Các thư mục con còn lại — mỗi module dữ liệu 1 thư mục riêng
+                driveMaintPlanFolderId = await driveFindOrCreateFolder(driveFolderId, 'maintplan');
+                driveAdhocPlanFolderId = await driveFindOrCreateFolder(driveFolderId, 'adhocplan');
+                driveAdhocCampaignFolderId = await driveFindOrCreateFolder(driveFolderId, 'adhoccampaign');
+                driveCompanyInfoFolderId = await driveFindOrCreateFolder(driveFolderId, 'companyinfo');
+                driveRcaFolderId = await driveFindOrCreateFolder(driveFolderId, 'rca');
+                driveWorkOrdersFolderId = await driveFindOrCreateFolder(driveFolderId, 'workorders');
+
+                // Ưu tiên nạp dữ liệu đã có trên Drive (nếu có) để đồng bộ giữa các máy
+                const [dMaintPlan, dAdhocPlan, dAdhocCampaign, dAdhocCampaignHistory, dCompanyInfo, dRca, dWorkOrders] = await Promise.all([
+                    driveLoadJsonFile(driveMaintPlanFolderId, 'maintPlan.json'),
+                    driveLoadJsonFile(driveAdhocPlanFolderId, 'adhocPlan.json'),
+                    driveLoadJsonFile(driveAdhocCampaignFolderId, 'adhocCampaign.json'),
+                    driveLoadJsonFile(driveAdhocCampaignFolderId, 'adhocCampaignHistory.json'),
+                    driveLoadJsonFile(driveCompanyInfoFolderId, 'companyInfo.json'),
+                    driveLoadJsonFile(driveRcaFolderId, 'rcaRecords.json'),
+                    driveLoadJsonFile(driveWorkOrdersFolderId, 'workOrders.json')
+                ]);
+                if (dMaintPlan) { maintPlan = dMaintPlan; localStorage.setItem('maintPlan', JSON.stringify(maintPlan)); renderMaintPlan(); }
+                if (dAdhocPlan) { adhocPlan = dAdhocPlan; localStorage.setItem('adhocPlan', JSON.stringify(adhocPlan)); renderAdhocPlan(); }
+                if (dAdhocCampaign) {
+                    adhocCampaign = dAdhocCampaign;
+                    localStorage.setItem('adhocCampaign', JSON.stringify(adhocCampaign));
+                    const sEl = document.getElementById('adhocStartDate');
+                    const eEl = document.getElementById('adhocEndDate');
+                    if (sEl) sEl.value = adhocCampaign.startDate || '';
+                    if (eEl) eEl.value = adhocCampaign.endDate || '';
+                }
+                if (dAdhocCampaignHistory) { adhocCampaignHistory = dAdhocCampaignHistory; localStorage.setItem('adhocCampaignHistory', JSON.stringify(adhocCampaignHistory)); }
+                if (dCompanyInfo) { saveCompanyInfo(dCompanyInfo); updateMainHeaderTitle(); }
+                if (dRca) { rcaRecords = dRca; localStorage.setItem('rcaRecords', JSON.stringify(rcaRecords)); renderRcaList(); }
+                if (dWorkOrders) { workOrders = dWorkOrders; localStorage.setItem('workOrders', JSON.stringify(workOrders)); renderWorkOrderPage(); }
+
                 appMode = 'drive';
                 updatePersonnelDirStatusUI(true, `technician (Google Drive — "${rootInfo.name}")`);
                 updateLogDirStatusUI(true, `logdata (Google Drive — "${rootInfo.name}")`);
 
                 if (statusEl) {
-                    statusEl.innerHTML = `🟢 Đang làm việc ONLINE với thư mục Google Drive: <strong>${rootInfo.name}</strong><br>📊 Dữ liệu: ${validExcel.length} file từ "data" &nbsp;•&nbsp; 📜 Nhật ký: "logdata" &nbsp;•&nbsp; 👥 Nhân sự: "technician"`;
+                    statusEl.innerHTML = `🟢 Đang làm việc ONLINE với thư mục Google Drive: <strong>${rootInfo.name}</strong><br>📊 Dữ liệu: ${validExcel.length} file từ "data" &nbsp;•&nbsp; 📜 Nhật ký: "logdata" &nbsp;•&nbsp; 👥 Nhân sự: "technician" &nbsp;•&nbsp; 🗂️ Kế hoạch / RCA / Work Order: đã đồng bộ`;
                 }
 
                 if (!hasLoadedDataOnce) {
