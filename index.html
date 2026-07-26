@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My TPM</title>
+    <title>Quản Lý Bảo Trì Thiết Bị - MDF VRG Quảng Trị</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* === GIAO DIỆN CÔNG NGHIỆP HIỆN ĐẠI (DARK THEME) === */
         :root {
@@ -27,7 +30,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             height: 100vh;
@@ -61,11 +64,12 @@
             letter-spacing: 0.2px;
         }
         .personnel-page-title span { color: var(--color-sky); }
-        .personnel-stat-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-        }
+        .personnel-stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+        .personnel-stat-row .stat-card { padding: 10px 14px; gap: 3px; flex-direction: row; flex-wrap: wrap; align-items: center; }
+        .personnel-stat-row .stat-icon { font-size: 1.05rem; opacity: 0.85; }
+        .personnel-stat-row .stat-label { font-size: 0.66rem; flex-basis: 100%; order: 2; }
+        .personnel-stat-row .stat-value { font-size: 1.15rem; order: 1; margin-left: auto; }
+        .personnel-stat-row .stat-sub { font-size: 0.62rem; flex-basis: 100%; order: 3; }
         .personnel-panel {
             background: var(--bg-panel);
             border: 1px solid var(--border-color);
@@ -219,6 +223,7 @@
         }
 
         /* ================= NÚT MENU (HAMBURGER) — CHỈ HIỆN TRÊN MÀN HÌNH HẸP ================= */
+        .wo-detail-close-mobile { display: none; }
         .mobile-menu-btn {
             display: none;
             align-items: center;
@@ -243,82 +248,6 @@
         }
         .mobile-nav-backdrop.show { display: block; }
 
-        /* ================= RESPONSIVE: ĐIỆN THOẠI & IPAD (≤ 900px) ================= */
-        @media (max-width: 900px) {
-            .mobile-menu-btn { display: flex; }
-
-            header {
-                margin-left: 0;
-                width: 100%;
-                height: 56px;
-                padding: 8px 12px;
-                gap: 10px;
-            }
-            .logo-text h1 { font-size: 0.88rem; }
-            .logo-text p { font-size: 0.66rem; }
-            .logo-box { padding: 5px 8px; font-size: 0.95rem; }
-
-            .app-container {
-                margin-left: 0;
-                width: 100%;
-                height: calc(100vh - 56px);
-            }
-
-            /* Thanh điều hướng chính chuyển thành menu trượt (mở bằng nút ☰) */
-            .icon-sidebar {
-                width: 250px;
-                transform: translateX(-100%);
-                transition: transform 0.25s ease;
-                box-shadow: 6px 0 24px rgba(0,0,0,0.5);
-                z-index: 80;
-            }
-            .icon-sidebar.mobile-open { transform: translateX(0); }
-            .icon-nav-btn {
-                flex-direction: row;
-                justify-content: flex-start;
-                gap: 14px;
-                padding: 12px 14px;
-                min-height: 46px;
-            }
-            .icon-nav-emoji { font-size: 1.25rem; }
-            .icon-nav-label { font-size: 0.85rem; text-align: left; }
-
-            /* Sidebar "Quản lý dữ liệu" — chiếm gần hết chiều rộng màn hình, không còn lệ thuộc vị trí icon-sidebar */
-            .sidebar, .sidebar-backdrop {
-                left: 0;
-                top: 56px;
-                height: calc(100vh - 56px);
-            }
-            .sidebar { width: 88%; max-width: 340px; }
-            .sidebar-backdrop { width: 100%; }
-
-            /* Tab Thiết bị: xếp chồng Sơ đồ cây + Kế hoạch mini thay vì chia 2 cột ngang */
-            .main-content { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-            .tree-section {
-                width: 100% !important;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                flex: none;
-                height: 52vh;
-            }
-            .panel-resizer { display: none; }
-            .plan-section { width: 100% !important; flex: none; }
-
-            /* Vùng nội dung chính các tab: giảm padding cho đỡ chật */
-            .dashboard-page { padding: 16px; }
-
-            /* Chống Safari/iOS tự zoom khi bấm vào ô nhập liệu có cỡ chữ < 16px */
-            input, select, textarea, button { font-size: 16px; }
-            .icon-nav-label, .fmea-sod-input { font-size: 0.85rem; }
-
-            /* Bảng dữ liệu rộng: cho phép cuộn ngang thay vì vỡ layout */
-            .fmea-actions-table, .rca-actions-table, .personnel-table, .adhoc-timeline-table {
-                display: block; overflow-x: auto; white-space: nowrap;
-            }
-            .fmea-actions-table thead, .fmea-actions-table tbody,
-            .rca-actions-table thead, .rca-actions-table tbody,
-            .personnel-table thead, .personnel-table tbody { display: table; width: 100%; }
-        }
 
 
         /* Header */
@@ -422,7 +351,7 @@
         }
 
         .tab-page { display: none; height: 100%; width: 100%; }
-        .tab-page.active { display: flex; height: 100%; width: 100%; flex: 1; min-width: 0; min-height: 0; }
+        .tab-page.active { display: flex; height: 100%; width: 100%; flex: 1; min-width: 0; min-height: 0; overflow-y: auto; }
 
         /* Workspace Layout */
         .app-container {
@@ -613,10 +542,9 @@
         }
 
         .section-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
             color: var(--color-sky);
         }
 
@@ -1094,7 +1022,7 @@
             flex-direction: column;
             gap: 2px;
             min-width: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         }
         .mini-plan-item-area {
             font-size: 0.66rem;
@@ -1219,7 +1147,7 @@
             gap: 3px;
             flex: 1;
             min-width: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         }
 
         .plan-cycle-badge {
@@ -1318,8 +1246,9 @@
             padding-bottom: 8px;
         }
         .modal-title {
-            font-size: 1rem;
-            font-weight: 700;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
             color: var(--color-sky);
         }
         .close-modal {
@@ -1501,7 +1430,7 @@
         .wo-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .wo-modal { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
         .wo-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg-panel); z-index: 1; }
-        .wo-modal-title { font-size: 1rem; font-weight: 800; color: white; }
+        .wo-modal-title { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.2px; color: white; }
         .wo-modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
         .wo-modal-footer { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; }
         .wo-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -1573,7 +1502,7 @@
         .rca-step-pill.active .num { background: var(--color-rose); }
 
         .rca-section { background-color: var(--bg-panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
-        .rca-section-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .rca-section-title { font-size: 0.86rem; font-weight: 600; letter-spacing: 0.2px; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .rca-section-title .badge-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(239,68,68,0.15); color: var(--color-rose); border: 1px solid rgba(239,68,68,0.35); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
         .rca-section-sub { font-size: 0.72rem; color: var(--text-muted); margin: -6px 0 12px 30px; }
         .rca-field-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -1630,7 +1559,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.78rem;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         }
         .log-report-table th, .log-report-table td {
             border: 1px solid var(--border-color);
@@ -1955,10 +1884,9 @@
         }
 
         .dashboard-section-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
             color: var(--color-sky);
             margin: 24px 0 12px 0;
             padding-bottom: 6px;
@@ -2078,11 +2006,12 @@
         .p-20 { padding: 20px; }
 
         /* ===== TRANG CẤU HÌNH (Google Drive / Gemini AI) ===== */
-        .config-page { max-width: 780px; margin: 0 auto; padding: 24px 20px 60px; width: 100%; overflow-y: auto; }
-        .config-page-title { font-size: 1.4rem; color: white; margin-bottom: 4px; }
-        .config-page-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 22px; }
-        .config-section { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
-        .config-section-title { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 8px; }
+        .config-page { width: 100%; max-width: 100%; margin: 0; padding: 18px 20px 40px; box-sizing: border-box; }
+        .config-page-title, .config-page-sub, .config-section { max-width: 780px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+        .config-page-title { font-size: 1.15rem; color: white; margin-bottom: 3px; }
+        .config-page-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; }
+        .config-section { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+        .config-section-title { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.2px; color: white; margin-bottom: 8px; }
         .config-hint { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
         .config-steps { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; margin: 0 0 14px 18px; padding: 0; }
         .config-steps li { margin-bottom: 4px; }
@@ -2126,6 +2055,136 @@
         .chatbot-input:focus { outline: none; border-color: var(--color-sky); }
         .chatbot-send-btn { background: var(--color-sky); border: none; color: white; border-radius: 8px; width: 38px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .chatbot-send-btn:hover { filter: brightness(1.15); }
+
+        /* ================= RESPONSIVE: ĐIỆN THOẠI & IPAD (≤ 900px) ================= */
+        @media (max-width: 900px) {
+            .mobile-menu-btn { display: flex; }
+
+            header {
+                margin-left: 0;
+                width: 100%;
+                height: 56px;
+                padding: 8px 12px;
+                gap: 10px;
+            }
+            .logo-text h1 { font-size: 0.88rem; }
+            .logo-text p { font-size: 0.66rem; }
+            .logo-box { padding: 5px 8px; font-size: 0.95rem; }
+
+            .app-container {
+                margin-left: 0;
+                width: 100%;
+                height: calc(100vh - 56px);
+            }
+
+            /* Thanh điều hướng chính chuyển thành menu trượt (mở bằng nút ☰) — gọn & đẹp hơn */
+            html, body { overflow-x: hidden; }
+            .icon-sidebar {
+                width: 210px;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                box-shadow: 6px 0 24px rgba(0,0,0,0.5);
+                border-top-right-radius: 14px;
+                border-bottom-right-radius: 14px;
+                padding: 10px 6px;
+                gap: 2px;
+                z-index: 80;
+            }
+            .icon-sidebar.mobile-open { transform: translateX(0); }
+            .icon-nav-btn {
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 12px;
+                padding: 10px 12px;
+                min-height: 42px;
+                border-radius: 9px;
+            }
+            .icon-nav-emoji { font-size: 1.1rem; width: 22px; }
+            .icon-nav-label { font-size: 0.8rem; text-align: left; }
+            .icon-nav-divider { margin: 4px 8px; }
+
+            /* Sidebar "Quản lý dữ liệu" — chiếm gần hết chiều rộng màn hình, không còn lệ thuộc vị trí icon-sidebar */
+            .sidebar, .sidebar-backdrop {
+                left: 0;
+                top: 56px;
+                height: calc(100vh - 56px);
+            }
+            .sidebar { width: 88%; max-width: 340px; }
+            .sidebar-backdrop { width: 100%; }
+
+            /* Tab Thiết bị: xếp chồng Sơ đồ cây + Kế hoạch mini thay vì chia 2 cột ngang */
+            .main-content { flex-direction: column; overflow-y: auto; overflow-x: hidden; width: 100%; max-width: 100%; box-sizing: border-box; }
+            .tree-section, .plan-section {
+                width: 100% !important;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            .tree-section {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                flex: none;
+                height: 52vh;
+            }
+            .panel-resizer { display: none; }
+            .plan-section { flex: none; }
+
+            /* Chống nội dung bị cắt mất khi rộng hơn màn hình: mọi khối chính co giãn vừa khung, không bị lố ngang */
+            .dashboard-page, .config-page, .wo-page, .personnel-page,
+            .tree-section, .plan-section, .rca-page {
+                width: 100%; max-width: 100%; box-sizing: border-box;
+            }
+
+            /* Dashboard: thu gọn thẻ số liệu, chỉ vừa đủ xem, đỡ chiếm màn hình */
+            .dashboard-page { padding: 12px; }
+            .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
+            .stat-card { padding: 10px 12px; gap: 3px; border-radius: 8px; }
+            .dashboard-section-title { font-size: 0.76rem; margin: 14px 0 8px 0; padding-bottom: 4px; }
+
+            /* Tiêu đề khu vực (section-header): không vỡ chữ đè xuống các nút/tab bên dưới */
+            .section-header { flex-wrap: wrap; gap: 6px; min-height: auto; padding: 8px 12px; }
+            .section-title { font-size: 0.78rem; }
+            .subtab-bar { flex-wrap: wrap; }
+
+            /* Tab Việc ngày (Work Order): xếp 3 cột Kanban chồng dọc, mỗi cột giới hạn chiều cao + tự cuộn riêng,
+               toàn khối cũng cuộn được để không bị cắt mất cột phía dưới */
+            .wo-kanban-wrap { flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 8px; gap: 10px; }
+            .wo-col { min-width: 100%; max-width: 100%; flex: none; }
+            .wo-col-body { max-height: 38vh; min-height: 60px; }
+            .wo-toolbar { padding: 8px 10px; gap: 8px; }
+            .wo-toolbar-left, .wo-toolbar-right { flex-wrap: wrap; }
+            .wo-detail-panel {
+                position: fixed;
+                left: 0; right: 0; bottom: 0;
+                top: 56px;
+                width: 100%;
+                z-index: 90;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                transform: translateY(100%);
+                transition: transform 0.25s ease;
+                box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+            }
+            .wo-detail-panel.wo-detail-open { transform: translateY(0); }
+            .wo-detail-close-mobile {
+                display: flex; align-items: center; justify-content: center; gap: 6px;
+                width: 100%; padding: 9px; margin-bottom: 4px;
+                background: var(--bg-panel-dark); border: 1px solid var(--border-color); border-radius: 8px;
+                color: var(--text-main); font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            }
+
+            /* Chống Safari/iOS tự zoom khi bấm vào ô nhập liệu có cỡ chữ < 16px */
+            input, select, textarea, button { font-size: 16px; }
+            .icon-nav-label, .fmea-sod-input { font-size: 0.85rem; }
+
+            /* Bảng dữ liệu rộng: cho phép cuộn ngang thay vì vỡ layout */
+            .fmea-actions-table, .rca-actions-table, .personnel-table, .adhoc-timeline-table {
+                display: block; overflow-x: auto; white-space: nowrap;
+            }
+            .fmea-actions-table thead, .fmea-actions-table tbody,
+            .rca-actions-table thead, .rca-actions-table tbody,
+            .personnel-table thead, .personnel-table tbody { display: table; width: 100%; }
+        }
+
     </style>
 </head>
 <body>
@@ -2164,14 +2223,6 @@
         <button class="icon-nav-btn" id="navBtnPersonnel" onclick="switchMainTab('personnel')" title="Quản lý nhân sự">
             <span class="icon-nav-emoji"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <span class="icon-nav-label">Nhân sự</span>
-        </button>
-        <button class="icon-nav-btn" id="btnSummaryReport" title="Báo cáo">
-            <span class="icon-nav-emoji">📈</span>
-            <span class="icon-nav-label">Báo cáo</span>
-        </button>
-        <button class="icon-nav-btn" id="btnCompanyInfo" title="Thông tin đơn vị">
-            <span class="icon-nav-emoji">🏢</span>
-            <span class="icon-nav-label">Đơn vị</span>
         </button>
         <div class="icon-nav-divider"></div>
         <button class="icon-nav-btn" id="navBtnConfig" onclick="switchMainTab('config')" title="Cấu hình kết nối (Google Drive / Gemini AI)">
@@ -2303,9 +2354,10 @@
                 <section class="tree-section" id="treeSection">
                     <div class="section-header">
                         <span class="section-title">Sơ đồ hệ thống thiết bị</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <span id="deviceCount" style="font-size: 0.8rem; color: var(--text-muted);">0 thiết bị</span>
                             <button id="btnAddDevice" class="btn btn-emerald" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAddDeviceModal()">➕ Thêm thiết bị</button>
+                            <button id="btnSummaryReport" class="btn btn-sky" style="padding: 4px 10px; font-size: 0.75rem;" title="Báo cáo kết quả bảo trì">📈 Báo cáo</button>
                         </div>
                     </div>
                     
@@ -2617,6 +2669,13 @@
                     </div>
                     <div id="geminiConnectStatus" class="log-dir-status">Chưa cấu hình Gemini API.</div>
                 </div>
+
+                <div class="config-section">
+                    <div class="config-section-title">🏢 Thông tin đơn vị</div>
+                    <div class="config-hint" style="margin-bottom:10px;">Hiển thị trên các phiếu in (nhật ký bảo trì, báo cáo...).</div>
+                    <div id="cfgCompanyInfoPreview" style="font-size:0.85rem; color:var(--text-main); margin-bottom:10px;"></div>
+                    <button class="btn btn-sky" onclick="openCompanyInfoModal()">✏️ Chỉnh sửa thông tin đơn vị</button>
+                </div>
             </div>
         </div>
 
@@ -2735,7 +2794,6 @@
         const sidebarBackdrop = document.getElementById('sidebarBackdrop');
         const filterImportance = document.getElementById('filterImportance');
         const logDirStatus = document.getElementById('logDirStatus');
-        const btnCompanyInfo = document.getElementById('btnCompanyInfo');
         const btnSummaryReport = document.getElementById('btnSummaryReport');
         const adhocPlanContainer = document.getElementById('adhocPlanContainer');
         const planSection = document.getElementById('planSection');
@@ -2774,8 +2832,7 @@
         excelFiles.addEventListener('change', handleExcelUploadLegacy);
         searchInput.addEventListener('input', renderDeviceTree);
         filterImportance.addEventListener('change', renderDeviceTree);
-        btnCompanyInfo.addEventListener('click', openCompanyInfoModal);
-        btnSummaryReport.addEventListener('click', openSummaryReportModal);
+        btnSummaryReport?.addEventListener('click', () => { closeMobileNav(); closeSidebar(); openSummaryReportModal(); });
         btnSaveFile.addEventListener('click', saveAndOverwriteFile);
         btnCompleteAll.addEventListener('click', () => {
             if (currentPlanSubtab === 'adhoc') completeAllAdhocPlan();
@@ -2789,6 +2846,7 @@
         // --- CHUYỂN TAB CHÍNH (WELCOME / DASHBOARD / THIẾT BỊ / NHÂN SỰ) ---
         function switchMainTab(tab) {
             closeMobileNav();
+            closeSidebar();
             currentMainTab = tab;
             ['welcome','dashboard','device','personnel','plan','rca','fmea','workorder','config'].forEach(t => {
                 const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -2808,6 +2866,7 @@
             if (tab === 'rca') { closeRcaEditor(); renderRcaList(); }
             if (tab === 'fmea') { closeFmeaEditor(); renderFmeaList(); }
             if (tab === 'workorder') { initWorkOrderTab(); }
+            if (tab === 'config') renderCfgCompanyInfoPreview();
         }
 
         // --- KHỞI CHẠY ỨNG DỤNG & PHỤC HỒI ---
@@ -4155,6 +4214,13 @@
             if (modal) modal.remove();
         }
 
+        function renderCfgCompanyInfoPreview() {
+            const el = document.getElementById('cfgCompanyInfoPreview');
+            if (!el) return;
+            const info = getCompanyInfo();
+            el.innerHTML = `<strong>${info.company}</strong><br>${info.department}${info.lineName ? ' — ' + info.lineName : ''}`;
+        }
+
         function confirmCompanyInfo(event) {
             event.preventDefault();
             saveCompanyInfo({
@@ -4164,6 +4230,7 @@
             });
             closeCompanyInfoModal();
             updateMainHeaderTitle();
+            renderCfgCompanyInfoPreview();
             alert("Đã lưu thông tin đơn vị! Các phiếu in và nhật ký từ giờ sẽ dùng thông tin mới.");
         }
 
@@ -8904,10 +8971,15 @@
         function woSelectCard(id) {
             woSelectedId = (woSelectedId === id) ? null : id;
             renderWorkOrderPage();
+            const panel = document.getElementById('woDetailPanel');
             if (woSelectedId) {
                 const found = woGetOrder(woSelectedId);
                 if (found) renderWoDetail(found.order);
-            } else renderWoDetailEmpty();
+                if (panel) panel.classList.add('wo-detail-open');
+            } else {
+                renderWoDetailEmpty();
+                if (panel) panel.classList.remove('wo-detail-open');
+            }
         }
 
         function renderWoDetailEmpty() {
@@ -8929,6 +9001,7 @@
             const activeMap = { pending: 'active-pending', inprogress: 'active-inprogress', done: 'active-done' };
 
             panel.innerHTML = `
+                <button class="wo-detail-close-mobile" onclick="woSelectCard('${o.id}')">✕ Đóng, quay lại danh sách</button>
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
                     <span style="font-size:0.8rem; font-weight:800; color:white;">${o.id}</span>
                     <span class="wo-pri-badge ${pri.cls}">${pri.label}</span>
