@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My TPM</title>
+    <title>Quản Lý Bảo Trì Thiết Bị - MDF VRG Quảng Trị</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -2072,7 +2072,10 @@
             }
             .logo-text p { display: none; }
             .logo-text h1 { font-size: 0.88rem; }
-            #headerUserStatus { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.68rem; }
+            #headerUserStatus { max-width: 42vw; }
+            #headerUserAccount, #headerUserNetStatus { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 42vw; }
+            #headerUserAccount { font-size: 0.72rem; }
+            #headerUserNetStatus { font-size: 0.64rem; }
             .logo-text p { font-size: 0.66rem; }
             .logo-box { padding: 5px 8px; font-size: 0.95rem; }
 
@@ -2250,7 +2253,10 @@
             </div>
         </div>
 
-        <div id="headerUserStatus" style="margin-left:auto; font-size:0.78rem; color:var(--text-muted); white-space:nowrap;">⚪ Chưa đăng nhập</div>
+        <div id="headerUserStatus" style="margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:1px; font-size:0.78rem; line-height:1.3; white-space:nowrap;">
+            <span id="headerUserAccount" style="color:var(--text-main);">⚪ Chưa đăng nhập</span>
+            <span id="headerUserNetStatus" style="font-size:0.7rem; color:var(--text-muted);">🌐 Có mạng</span>
+        </div>
 
         <input type="file" id="excelFiles" multiple accept=".xlsx, .xls" class="hidden">
     </header>
@@ -9828,21 +9834,39 @@
             }
         }
 
-        // Cập nhật dòng trạng thái đăng nhập/Online trên header (thay cho nút "Lưu dữ liệu" cũ)
+        // Cập nhật 2 dòng trạng thái trên header: tài khoản đăng nhập + trạng thái mạng/Drive (thay cho nút "Lưu dữ liệu" cũ)
         function updateHeaderUserStatus() {
-            const el = document.getElementById('headerUserStatus');
-            if (!el) return;
+            const accEl = document.getElementById('headerUserAccount');
+            const netEl = document.getElementById('headerUserNetStatus');
+            if (!accEl || !netEl) return;
+
+            // Dòng 1: tài khoản đăng nhập
             if (!driveAccessToken) {
-                el.textContent = '⚪ Chưa đăng nhập';
-                return;
-            }
-            const displayName = driveUserName || driveUserEmail || 'Google';
-            if (appMode === 'drive' && driveActiveFolderId) {
-                el.innerHTML = `🟢 Online — <strong>${displayName}</strong>`;
+                accEl.textContent = '⚪ Chưa đăng nhập';
             } else {
-                el.innerHTML = `👤 ${displayName} <span style="color:var(--text-muted);">(chưa kích hoạt dự án)</span>`;
+                const displayName = driveUserName || driveUserEmail || 'Google';
+                accEl.innerHTML = `👤 <strong>${displayName}</strong>`;
+            }
+
+            // Dòng 2: trạng thái mạng thật + trạng thái Drive
+            if (!navigator.onLine) {
+                netEl.innerHTML = '🔴 Mất mạng';
+                netEl.style.color = 'var(--color-rose)';
+            } else if (driveAccessToken && appMode === 'drive' && driveActiveFolderId) {
+                netEl.innerHTML = '🟢 Online';
+                netEl.style.color = 'var(--color-emerald)';
+            } else if (driveAccessToken) {
+                netEl.innerHTML = '🟡 Chưa kích hoạt dự án';
+                netEl.style.color = 'var(--color-amber)';
+            } else {
+                netEl.innerHTML = '🌐 Có mạng';
+                netEl.style.color = 'var(--text-muted)';
             }
         }
+
+        // Theo dõi mất/có mạng thật của trình duyệt — tự cập nhật ngay, không cần đợi người dùng thao tác
+        window.addEventListener('online', updateHeaderUserStatus);
+        window.addEventListener('offline', updateHeaderUserStatus);
 
         // Khi người dùng đổi lựa chọn dự án ở dropdown mà chưa bấm Kích hoạt lại
         function onDriveFolderSelectChange() {
