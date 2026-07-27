@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My TPM</title>
+    <title>Quản Lý Bảo Trì Thiết Bị - MDF VRG Quảng Trị</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -861,13 +861,13 @@
 
         /* Ngăn 2 & Ngăn 3: Khung chứa dòng song song */
         .comp-middle {
-            flex: 2.9;
+            flex: 3.4;
             min-width: 0;
             background-color: rgba(15, 23, 42, 0.25);
         }
 
         .comp-right {
-            flex: 2.9;
+            flex: 2.4;
             min-width: 0;
             background-color: rgba(15, 23, 42, 0.1);
         }
@@ -878,9 +878,13 @@
             color: var(--text-muted);
             letter-spacing: 0.5px;
             margin-bottom: 8px;
-            font-weight: 700;
+            font-weight: 600;
             border-bottom: 1px dashed var(--border-color);
             padding-bottom: 4px;
+            min-height: 21px;
+            box-sizing: content-box;
+            display: flex;
+            align-items: center;
         }
 
         .plan-rows-container {
@@ -914,7 +918,7 @@
             cursor: pointer;
             width: 78px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 400;
             white-space: nowrap;
         }
 
@@ -925,7 +929,7 @@
 
         .next-plan-date-large {
             font-size: 0.85rem; /* Phóng to tương ứng nút nhấn */
-            font-weight: 700;
+            font-weight: 400;
             color: var(--text-muted);
         }
         .next-plan-date-large.highlight {
@@ -944,7 +948,7 @@
         .history-label {
             color: var(--text-muted);
             font-size: 0.68rem;
-            font-weight: 600;
+            font-weight: 400;
         }
 
         .history-val-box {
@@ -956,7 +960,7 @@
         .history-val-text {
             color: #cbd5e1;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 400;
         }
 
         .btn-trend {
@@ -2453,10 +2457,14 @@
                         </div>
                     </div>
 
-                    <div style="padding: 10px 15px 0 15px;">
+                    <div style="padding: 10px 15px 0 15px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
                         <div class="subtab-bar">
                             <button id="subtabBtnCyclic" class="subtab-btn active tab-cyclic" onclick="switchPlanSubtab('cyclic')">♻️ Theo chu kỳ</button>
                             <button id="subtabBtnAdhoc" class="subtab-btn tab-adhoc" onclick="switchPlanSubtab('adhoc')">🔧 Bảo trì đột xuất</button>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn btn-sky" style="padding:4px 10px; font-size:0.75rem;" onclick="bulkCreateWorkOrdersFromPlan()" title="Tạo lệnh công việc cho toàn bộ danh sách đang xem">📤 Xuất tất cả → Lệnh CV</button>
+                            <button class="btn btn-violet" style="padding:4px 10px; font-size:0.75rem;" onclick="exportPlanQrCode()" title="Mã QR dẫn thẳng tới tab Việc ngày cho kỹ thuật viên">📱 QR Việc ngày</button>
                         </div>
                     </div>
 
@@ -2743,6 +2751,8 @@
         let hasUnsavedChanges = false;
         let expandedNodes = new Set(); // Bộ nhớ lưu nhánh mở
         let currentMainTab = 'welcome';
+        // Đọc tham số ?goto=... trên URL (dùng khi quét mã QR "Việc ngày" — mở thẳng đúng tab sau khi đăng nhập)
+        let pendingGotoTab = new URLSearchParams(location.search).get('goto');
         let hasLoadedDataOnce = false;
         let deviceLogs = {}; // { "MÃ_THIẾT_BỊ": [ {id, performedAt, cycleType, cycleLabel, jobText, materials, performedBy, checkedBy, result, downtimeMinutes, notes, recordedAt} ] }
         let logDirHandle = null;
@@ -2927,6 +2937,16 @@
                 console.error("Lỗi khôi phục thư mục nhân sự:", e);
             }
             initPanelResizer();
+
+            // Nếu mở trang qua mã QR "Việc ngày" (?goto=workorder) — đưa thẳng người dùng tới bước đăng nhập
+            if (pendingGotoTab === 'workorder') {
+                switchMainTab('config');
+                const banner = document.createElement('div');
+                banner.className = 'config-section';
+                banner.style.cssText = 'border-color: var(--color-violet); background: rgba(168,85,247,0.08);';
+                banner.innerHTML = `<div style="font-size:0.85rem; color:var(--text-main);">🔗 Bạn đang mở đường dẫn được chia sẻ tới danh sách <strong>Việc ngày</strong>. Vui lòng đăng nhập Google bên dưới — hệ thống sẽ tự mở đúng danh sách sau khi kích hoạt dự án.</div>`;
+                document.querySelector('.config-page')?.prepend(banner);
+            }
         });
 
         // --- KÉO GIÃN / THU NHỎ KHUNG SƠ ĐỒ THIẾT BỊ & KẾ HOẠCH BẢO DƯỠNG ---
@@ -4260,6 +4280,108 @@
         }
 
         // --- KẾ HOẠCH BẢO TRÌ ĐỘT XUẤT / NÂNG CẤP / THAY THẾ (KHÔNG THEO CHU KỲ) ---
+        // Tạo trực tiếp 1 lệnh công việc (không mở modal xác nhận) — dùng cho luồng tạo hàng loạt
+        function createWorkOrderSilent(prefill) {
+            const date = prefill.date || woCurrentDate || woTodayStr();
+            const order = {
+                id: woGenId(),
+                title: prefill.title || '',
+                type: prefill.type || '',
+                priority: prefill.priority || 'normal',
+                shift: '',
+                assignee: prefill.assignee || '',
+                estHours: 0,
+                device: prefill.device || '',
+                deviceName: (allValidRows.find(d => d.item === prefill.device) || {}).name || '',
+                description: prefill.description || '',
+                status: 'pending',
+                source: 'plan-bulk',
+                sourceRef: prefill.sourceRef || null,
+                createdAt: new Date().toLocaleString('vi-VN'),
+                startedAt: '', completedAt: '', actualHours: 0, completionNotes: ''
+            };
+            if (!workOrders[date]) workOrders[date] = [];
+            workOrders[date].push(order);
+            return order;
+        }
+
+        // Xuất TOÀN BỘ danh sách (Theo chu kỳ hoặc Bảo trì đột xuất) đang xem thành các lệnh công việc,
+        // để kỹ thuật viên có thể vào tab "Việc ngày" xử lý & nhập kết quả trực tiếp — bỏ qua mục đã có sẵn lệnh CV.
+        function bulkCreateWorkOrdersFromPlan() {
+            const kind = currentPlanSubtab; // 'cyclic' | 'adhoc'
+            const list = kind === 'adhoc' ? adhocPlan : maintPlan;
+            if (!list || list.length === 0) { alert('Danh sách hiện đang trống, không có gì để tạo lệnh công việc.'); return; }
+            const kindLabel = kind === 'adhoc' ? 'Bảo trì đột xuất' : 'Theo chu kỳ';
+            if (!confirm(`Tạo lệnh công việc cho toàn bộ ${list.length} mục trong danh sách "${kindLabel}"?\n(Mục nào đã có lệnh công việc từ trước sẽ được bỏ qua, không tạo trùng.)`)) return;
+
+            let created = 0, skipped = 0;
+            list.forEach(p => {
+                if (woFindLinkedOrder(kind, p.planId)) { skipped++; return; }
+                const prefill = kind === 'cyclic'
+                    ? {
+                        title: `${p.cycleLabel} — ${p.item}${p.name ? ' (' + p.name + ')' : ''}`,
+                        type: 'Bảo trì định kỳ',
+                        priority: 'normal',
+                        date: p.scheduledDate || woTodayStr(),
+                        assignee: p.assignedTo || '',
+                        device: p.item || '',
+                        description: p.jobText || '',
+                        sourceRef: { planId: p.planId, kind: 'cyclic' }
+                    }
+                    : {
+                        title: `Bảo trì đột xuất — ${p.item}${p.name ? ' (' + p.name + ')' : ''}`,
+                        type: 'Sửa chữa',
+                        priority: p.priority >= 3 ? 'critical' : (p.priority >= 2 ? 'urgent' : 'normal'),
+                        date: woTodayStr(),
+                        assignee: p.assignedTo || '',
+                        device: p.item || '',
+                        description: p.jobText || '',
+                        sourceRef: { planId: p.planId, kind: 'adhoc' }
+                    };
+                createWorkOrderSilent(prefill);
+                created++;
+            });
+            saveWorkOrdersToStorage();
+            renderWorkOrderPage();
+            alert(`Đã tạo ${created} lệnh công việc mới${skipped > 0 ? `, bỏ qua ${skipped} mục đã có lệnh công việc từ trước` : ''}.\nVào tab "🗂️ Việc ngày" hoặc quét mã QR để bắt đầu xử lý.`);
+        }
+
+        // Xuất mã QR dẫn thẳng tới tab "Việc ngày" của CHÍNH trang này (không phải nội dung tĩnh) —
+        // kỹ thuật viên quét mã, đăng nhập Google, hệ thống tự mở đúng tab để xử lý & nhập kết quả.
+        function exportPlanQrCode() {
+            const url = location.origin + location.pathname + '?goto=workorder';
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'planQrModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 360px; text-align: center;">
+                    <div class="modal-header">
+                        <span class="modal-title">📱 Mã QR — Việc ngày</span>
+                        <button class="close-modal" onclick="document.getElementById('planQrModal').remove()">✖</button>
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Kỹ thuật viên quét mã này bằng camera điện thoại, đăng nhập Google (tài khoản đã được cấp quyền), hệ thống sẽ tự mở thẳng tab <strong>"🗂️ Việc ngày"</strong> để xem và nhập kết quả công việc trực tiếp.
+                    </p>
+                    <div id="planQrCanvas" style="display:flex; justify-content:center; margin:10px 0; background:white; padding:12px; border-radius:8px;"></div>
+                    <div id="planQrError" style="color: var(--color-rose); font-size: 0.75rem; display: none;"></div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 8px; word-break: break-all;">${url}</div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            try {
+                if (typeof QRCode === 'undefined') throw new Error('QRCode library not loaded');
+                new QRCode(document.getElementById('planQrCanvas'), {
+                    text: url, width: 240, height: 240,
+                    colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (err) {
+                console.error('Lỗi tạo mã QR:', err);
+                document.getElementById('planQrCanvas').style.display = 'none';
+                const errEl = document.getElementById('planQrError');
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Không tạo được mã QR: ' + err.message; }
+            }
+        }
+
         function switchPlanSubtab(tab) {
             currentPlanSubtab = tab;
             document.getElementById('subtabBtnCyclic').classList.toggle('active', tab === 'cyclic');
@@ -10191,7 +10313,12 @@
                     statusEl.innerHTML = `🟢 Đang làm việc ONLINE với thư mục Google Drive: <strong>${rootInfo.name}</strong><br>📊 Dữ liệu: ${validExcel.length} file từ "data" &nbsp;•&nbsp; 📜 Nhật ký: "logdata" &nbsp;•&nbsp; 👥 Nhân sự: "technician" &nbsp;•&nbsp; 🗂️ Kế hoạch / RCA / FMEA / Work Order: đã đồng bộ`;
                 }
 
-                if (!hasLoadedDataOnce) {
+                if (pendingGotoTab === 'workorder') {
+                    pendingGotoTab = null;
+                    hasLoadedDataOnce = true;
+                    closeSidebar();
+                    switchMainTab('workorder');
+                } else if (!hasLoadedDataOnce) {
                     hasLoadedDataOnce = true;
                     closeSidebar();
                     switchMainTab('dashboard');
