@@ -7572,8 +7572,17 @@
             const statusEl = document.getElementById('driveConnectStatus');
             const badgeEl = document.getElementById('cfg_driveFolderStatus');
             readSelectedDriveFolder();
-            if (!driveAccessToken) { alert('Vui lòng bấm "🔗 Đăng nhập bằng Google" trước!'); return; }
-            if (!driveFolderId) { alert('Vui lòng chọn dự án / thư mục Google Drive trước!'); return; }
+            const gateStatusEarly = document.getElementById('authGateActivateStatus');
+            if (!driveAccessToken) {
+                if (gateStatusEarly) gateStatusEarly.textContent = '🔴 Chưa đăng nhập Google.';
+                alert('Vui lòng bấm "🔗 Đăng nhập bằng Google" trước!');
+                return;
+            }
+            if (!driveFolderId) {
+                if (gateStatusEarly) gateStatusEarly.textContent = '🔴 Chưa chọn dự án / thư mục Google Drive.';
+                alert('Vui lòng chọn dự án / thư mục Google Drive trước!');
+                return;
+            }
             if (statusEl) statusEl.innerHTML = '⏳ Đang kích hoạt thư mục dự án trên Google Drive...';
             if (badgeEl) badgeEl.textContent = '⏳ Đang kích hoạt...';
 
@@ -7590,7 +7599,12 @@
                 );
 
                 if (validExcel.length === 0) {
-                    if (statusEl) statusEl.innerHTML = `⚠️ Đã kết nối thư mục "<strong>${rootInfo.name}</strong>" nhưng chưa có file Excel nào trong thư mục con "data" trên Drive. Vui lòng tải file dữ liệu (.xlsx) lên đó rồi bấm lại "🚀 Kích hoạt thư mục dự án".`;
+                    const msg = `Đã kết nối thư mục "${rootInfo.name}" nhưng chưa có file Excel nào trong thư mục con "data" trên Drive. Vui lòng tải file dữ liệu (.xlsx) lên đó rồi thử kích hoạt lại.`;
+                    if (statusEl) statusEl.innerHTML = `⚠️ ${msg}`;
+                    if (badgeEl) badgeEl.textContent = '⚪ Chưa kích hoạt';
+                    const gateStatus = document.getElementById('authGateActivateStatus');
+                    if (gateStatus) gateStatus.textContent = `⚠️ ${msg}`;
+                    alert(msg);
                     return;
                 }
 
@@ -7679,6 +7693,8 @@
                 }
 
                 // Kích hoạt xong: ẩn màn hình gate, mở khoá toàn bộ giao diện chính
+                const gateStatusOk = document.getElementById('authGateActivateStatus');
+                if (gateStatusOk) gateStatusOk.innerHTML = `🟢 Đã kích hoạt "${rootInfo.name}" thành công!`;
                 document.body.classList.add('authenticated');
                 document.getElementById('authGateScreen')?.remove();
             } catch (err) {
