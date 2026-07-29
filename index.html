@@ -35,11 +35,6 @@
     </div>
 
     <nav class="icon-sidebar" id="iconSidebar">
-        <button id="btnToggleSidebar" class="icon-nav-btn" title="Quản lý dữ liệu">
-            <span class="icon-nav-emoji">📁</span>
-            <span class="icon-nav-label">Dữ liệu</span>
-        </button>
-        <div class="icon-nav-divider"></div>
         <button class="icon-nav-btn active" id="navBtnDashboard" onclick="switchMainTab('dashboard')" title="Tổng quan">
             <span class="icon-nav-emoji">📊</span>
             <span class="icon-nav-label">Tổng quan</span>
@@ -96,29 +91,6 @@
 
         <input type="file" id="excelFiles" multiple accept=".xlsx, .xls" class="hidden">
     </header>
-
-    <!-- Sidebar Quản lý dữ liệu: overlay dùng chung cho mọi tab -->
-    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-    <aside id="fileSidebar" class="sidebar collapsed">
-        <h3 class="sidebar-title">Hành động dữ liệu</h3>
-        <div style="font-size:0.78rem; color:var(--text-muted); padding:6px 0 4px;">Dữ liệu được nạp trực tiếp từ thư mục dự án bên dưới. Nút "💾 Lưu dữ liệu" nằm ở góc trên bên phải màn hình.</div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 5px 0;">
-
-        <h3 class="sidebar-title">📂 Thư mục dự án</h3>
-        <button id="btnChooseProjectFolder" class="btn btn-violet" style="width: 100%;" onclick="chooseProjectFolder()">📂 Chọn thư mục dự án</button>
-        <div id="projectDirStatus" class="log-dir-status">Chọn 1 thư mục dự án (được cấp quyền 1 lần) chứa sẵn 3 thư mục con: <strong>data</strong> (file Excel dữ liệu), <strong>logdata</strong> (nhật ký bảo trì), <strong>technician</strong> (nhân sự). Hệ thống sẽ tự nhận diện, nạp dữ liệu và kết nối cả 3 thư mục cùng lúc — thuận tiện khi mở lại dự án cũ hoặc chuyển sang dự án mới.</div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 5px 0;">
-        
-        <h3 class="sidebar-title" id="fileListSectionTitle">🚀 Kích hoạt nhanh thư mục dự án</h3>
-        <div id="fileListContainer" class="file-list">
-            <div class="italic text-center" style="color: var(--text-muted); font-size: 0.8rem; padding: 15px 0;">
-                Chưa có thư mục dự án nào được ghi nhớ. Hãy chọn "📂 Chọn thư mục dự án" ở trên — lần sau mở lại, hệ thống sẽ nhớ vị trí để bạn kích hoạt nhanh tại đây.
-            </div>
-        </div>
-
-    </aside>
 
     <div class="app-container">
 
@@ -469,18 +441,12 @@
         <div id="tabConfig" class="tab-page">
             <div class="config-page">
                 <h2 class="config-page-title">⚙️ Cấu hình kết nối</h2>
-                <p class="config-page-sub">Kết nối hệ thống với Google Drive để làm việc online, và cấu hình chatbot trợ lý AI (Gemini).</p>
+                <p class="config-page-sub">Chọn dự án Google Drive để làm việc, và cấu hình Gemini AI.</p>
 
                 <div class="config-section">
-                    <div class="config-section-title">☁️ Google Drive — làm việc online</div>
+                    <div class="config-section-title">☁️ Dự án Google Drive</div>
 
-                    <div class="config-actions-row">
-                        <button class="btn btn-violet" onclick="connectGoogleDrive()">🔗 Đăng nhập bằng Google</button>
-                        <button class="btn btn-slate" onclick="disconnectGoogleDrive()">⛔ Ngắt kết nối / Về chế độ offline</button>
-                    </div>
-                    <div id="driveLoginStatus" class="log-dir-status">⚪ Chưa đăng nhập Google.</div>
-
-                    <div class="config-form-row" style="margin-top:10px;">
+                    <div class="config-form-row">
                         <div class="config-form-field">
                             <label>Chọn dự án / thư mục Google Drive</label>
                             <select id="cfg_driveFolderSelect" class="search-input" onchange="onDriveFolderSelectChange()"></select>
@@ -491,12 +457,19 @@
                         <span id="cfg_driveFolderStatus" class="log-dir-status" style="display:inline-block;">⚪ Chưa kích hoạt</span>
                     </div>
                     <div id="driveConnectStatus" class="log-dir-status"></div>
+
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 14px 0;">
+
+                    <div class="config-section-title" id="fileListSectionTitle" style="font-size:0.85rem;">📄 Tệp dữ liệu đang mở</div>
+                    <div id="fileListContainer" class="file-list">
+                        <div class="italic text-center" style="color: var(--text-muted); font-size: 0.8rem; padding: 15px 0;">
+                            Chưa có tệp nào — kích hoạt dự án ở trên để nạp dữ liệu.
+                        </div>
+                    </div>
                 </div>
 
-
                 <div class="config-section">
-                    <div class="config-section-title">🤖 Gemini AI — trợ lý chatbot</div>
-                    <p class="config-hint">Dùng Gemini API Key để bật chatbot trợ lý AI (nút 💬 ở góc dưới bên phải màn hình).</p>
+                    <div class="config-section-title">🤖 Gemini AI</div>
 
                     <div class="config-form-row">
                         <div class="config-form-field">
@@ -526,6 +499,13 @@
                     <div class="config-hint" style="margin-bottom:10px;">Hiển thị trên các phiếu in (nhật ký bảo trì, báo cáo...).</div>
                     <div id="cfgCompanyInfoPreview" style="font-size:0.85rem; color:var(--text-main); margin-bottom:10px;"></div>
                     <button class="btn btn-sky" onclick="openCompanyInfoModal()">✏️ Chỉnh sửa thông tin đơn vị</button>
+                </div>
+
+                <div class="config-section">
+                    <div class="config-section-title">📂 Chế độ Offline (không cần đăng nhập)</div>
+                    <div class="config-hint" style="margin-bottom:10px;">Chỉ dùng khi làm việc trực tiếp trên máy, không qua Google Drive.</div>
+                    <button id="btnChooseProjectFolder" class="btn btn-violet" onclick="chooseProjectFolder()">📂 Chọn thư mục dự án (offline)</button>
+                    <div id="projectDirStatus" class="log-dir-status">Chọn 1 thư mục dự án chứa sẵn 3 thư mục con: <strong>data</strong>, <strong>logdata</strong>, <strong>technician</strong>.</div>
                 </div>
             </div>
         </div>

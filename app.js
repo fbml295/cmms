@@ -69,8 +69,6 @@
         let woSelectedId = null;
 
         // DOM elements
-        const btnToggleSidebar = document.getElementById('btnToggleSidebar');
-        const fileSidebar = document.getElementById('fileSidebar');
         const excelFiles = document.getElementById('excelFiles');
         const fileListContainer = document.getElementById('fileListContainer');
         const btnSaveFile = document.getElementById('btnSaveFile');
@@ -81,7 +79,6 @@
         const btnCompleteAll = document.getElementById('btnCompleteAll');
         const btnPrintPlan = document.getElementById('btnPrintPlan');
         const deviceCount = document.getElementById('deviceCount');
-        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
         const filterImportance = document.getElementById('filterImportance');
         const logDirStatus = document.getElementById('logDirStatus');
         const btnSummaryReport = document.getElementById('btnSummaryReport');
@@ -94,14 +91,15 @@
             if (unsavedIndicator) unsavedIndicator.classList.toggle('hidden', !val);
         }
 
-        // Gán sự kiện
+        // Sidebar "Dữ liệu" đã gộp vào tab Cấu hình — 2 hàm này giữ lại dạng an toàn (no-op)
+        // để các đoạn code khác gọi openSidebar()/closeSidebar() không bị lỗi.
         function openSidebar() {
-            fileSidebar.classList.remove('collapsed');
-            sidebarBackdrop.classList.add('show');
+            document.getElementById('fileSidebar')?.classList.remove('collapsed');
+            document.getElementById('sidebarBackdrop')?.classList.add('show');
         }
         function closeSidebar() {
-            fileSidebar.classList.add('collapsed');
-            sidebarBackdrop.classList.remove('show');
+            document.getElementById('fileSidebar')?.classList.add('collapsed');
+            document.getElementById('sidebarBackdrop')?.classList.remove('show');
         }
 
         // --- MENU DI ĐỘNG (☰) — chỉ hoạt động trên màn hình hẹp (điện thoại/iPad), CSS ẩn nút này trên desktop ---
@@ -113,12 +111,6 @@
             document.getElementById('iconSidebar')?.classList.remove('mobile-open');
             document.getElementById('mobileNavBackdrop')?.classList.remove('show');
         }
-        btnToggleSidebar.addEventListener('click', () => {
-            closeMobileNav();
-            if (fileSidebar.classList.contains('collapsed')) openSidebar();
-            else closeSidebar();
-        });
-        sidebarBackdrop.addEventListener('click', closeSidebar);
         excelFiles.addEventListener('change', handleExcelUploadLegacy);
         searchInput.addEventListener('input', renderDeviceTree);
         filterImportance.addEventListener('change', renderDeviceTree);
