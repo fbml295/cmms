@@ -398,3 +398,181 @@
             renderPersonnelPage();
         }
 
+
+        // ---- Bổ sung: quản lý thư mục nhân sự offline + QR cá nhân ----
+        async function saveTechnicianDirHandleToDB(handle) {
+            try {
+                const db = await openDB();
+                const tx = db.transaction(storeName, "readwrite");
+                const store = tx.objectStore(storeName);
+                await store.put({ id: "technician_dir", handle: handle, name: handle.name });
+            } catch (e) { /* Handle ảo (Google Drive) không thể lưu vào IndexedDB — bỏ qua an toàn */ }
+        }
+
+        async function getTechnicianDirHandleFromDB() {
+            const db = await openDB();
+            return new Promise((resolve) => {
+                const tx = db.transaction(storeName, "readonly");
+                const store = tx.objectStore(storeName);
+                const request = store.get("technician_dir");
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        // Tự động tìm/tạo thư mục "technician" bên trong thư mục dữ liệu vừa chọn, rồi nạp file nhan_su.csv (nếu có)
+        async function setupTechnicianFolder(dirHandle) {
+            try {
+                const techDir = await dirHandle.getDirectoryHandle('technician', { create: true });
+                technicianDirHandle = techDir;
+                await saveTechnicianDirHandleToDB(techDir);
+                await loadPersonnelCsvFromFile();
+                updatePersonnelDirStatusUI(true, `technician (trong "${dirHandle.name}")`);
+            } catch (err) {
+                console.error("Lỗi thiết lập thư mục nhân sự tự động:", err);
+            }
+        }
+
+        async function tryRestoreTechnicianDirHandle() {
+            const saved = await getTechnicianDirHandleFromDB();
+            if (!saved || !saved.handle) return;
+            try {
+                const options = { mode: 'readwrite' };
+                let granted = await saved.handle.queryPermission(options);
+                if (granted !== 'granted') {
+                    technicianDirHandle = saved.handle;
+                    updatePersonnelDirStatusUI(true, saved.handle.name, true);
+                    return;
+                }
+                technicianDirHandle = saved.handle;
+                await loadPersonnelCsvFromFile();
+                updatePersonnelDirStatusUI(true, saved.handle.name);
+            } catch (e) {
+                console.error("Lỗi khôi phục thư mục nhân sự:", e);
+            }
+        }
+
+        function updatePersonnelDirStatusUI(connected, name, needsReauth) {
+            const html = !connected
+                ? `Chưa kết nối thư mục "technician". Danh sách nhân sự đang chỉ lưu trong trình duyệt.`
+                : `🗂️ Đã kết nối: <strong>${name}</strong> — file <strong>nhan_su.csv</strong>${needsReauth ? ' (cần xác nhận lại quyền ghi ở lần lưu tiếp theo)' : ''}`;
+            document.querySelectorAll('.personnelDirStatusEl').forEach(el => { el.innerHTML = html; });
+        }
+
+        // Đọc file nhan_su.csv có sẵn trong thư mục technician (nếu có) và nạp vào personnelList
+        async function loadPersonnelCsvFromFile() {
+            if (!technicianDirHandle) return;
+            try {
+                const options = { mode: 'readwrite' };
+                if (await technicianDirHandle.queryPermission(options) !== 'granted') {
+                    if (await technicianDirHandle.requestPermission(options) !== 'granted') return;
+                }
+                let fileHandle;
+                try {
+                    fileHandle = await technicianDirHandle.getFileHandle('nhan_su.csv', { create: false });
+                } catch (e) {
+                    // Chưa có file -> tạo mới từ danh sách hiện tại (nếu có)
+                    await writePersonnelCsvFile();
+                    return;
+                }
+                const file = await fileHandle.getFile();
+                const text = (await file.text()).replace(/^\uFEFF/, '');
+                const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+                const imported = [];
+                lines.forEach((line, idx) => {
+                    const cols = parsePersonnelCsvLine(line);
+                    const name = (cols[0] || '').trim();
+                    if (idx === 0 && (name.toLowerCase().includes('họ') || name.toLowerCase().includes('ho va ten'))) return;
+                    if (!name) return;
+                    imported.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 5),
+                        name: name,
+                        position: (cols[1] || '').trim(),
+                        department: (cols[2] || '').trim()
+                    });
+                });
+                if (imported.length > 0) {
+                    personnelList = imported;
+                    savePersonnelToStorage();
+                    renderPersonnelManageModal();
+                    renderDashboard();
+                }
+            } catch (err) {
+                console.error("Lỗi nạp file nhân sự:", err);
+            }
+        }
+
+        // Ghi đè file nhan_su.csv trong thư mục technician với danh sách nhân sự hiện tại
+        async function writePersonnelCsvFile() {
+            if (!technicianDirHandle) return false;
+            try {
+                const options = { mode: 'readwrite' };
+                if (await technicianDirHandle.queryPermission(options) !== 'granted') {
+                    if (await technicianDirHandle.requestPermission(options) !== 'granted') return false;
+                }
+                const fileHandle = await technicianDirHandle.getFileHandle('nhan_su.csv', { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(buildPersonnelCsvString());
+                await writable.close();
+                return true;
+            } catch (err) {
+                console.error("Lỗi ghi file nhân sự:", err);
+                return false;
+            }
+        }
+
+        // Cho phép người dùng chọn thủ công thư mục "technician" (nếu chưa được tự động thiết lập lúc nạp file)
+        async function chooseTechnicianDirectory() {
+            if (typeof window.showDirectoryPicker === 'undefined') {
+                alert("Trình duyệt này không hỗ trợ chọn thư mục trực tiếp (chỉ Chrome/Edge trên máy tính hỗ trợ). Danh sách nhân sự vẫn được lưu tự động trong trình duyệt.");
+                return;
+            }
+            try {
+                const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                const techDir = await dirHandle.getDirectoryHandle('technician', { create: true });
+                technicianDirHandle = techDir;
+                await saveTechnicianDirHandleToDB(techDir);
+                await loadPersonnelCsvFromFile();
+                updatePersonnelDirStatusUI(true, `technician (trong "${dirHandle.name}")`);
+                renderPersonnelManageModal();
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    alert("Không thể chọn thư mục: " + err.message);
+                }
+            }
+        }
+
+        function exportPersonnelQrCode(name) {
+            const url = location.origin + location.pathname + '?goto=workorder&assignee=' + encodeURIComponent(name);
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'personnelQrModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 360px; text-align: center;">
+                    <div class="modal-header">
+                        <span class="modal-title">📱 Mã QR việc — ${rcaEsc(name)}</span>
+                        <button class="close-modal" onclick="document.getElementById('personnelQrModal').remove()">✖</button>
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Mã cố định riêng của <strong>${rcaEsc(name)}</strong> — dùng lại được cho mọi lần giao việc sau này, không cần tạo lại. Quét bằng điện thoại, đăng nhập Google, hệ thống sẽ tự mở tab "Việc ngày" và <strong>chỉ hiển thị đúng việc được giao cho ${rcaEsc(name)}</strong>.
+                    </p>
+                    <div id="personnelQrCanvas" style="display:flex; justify-content:center; margin:10px 0; background:white; padding:12px; border-radius:8px;"></div>
+                    <div id="personnelQrError" style="color: var(--color-rose); font-size: 0.75rem; display: none;"></div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 8px; word-break: break-all;">${url}</div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            try {
+                if (typeof QRCode === 'undefined') throw new Error('QRCode library not loaded');
+                new QRCode(document.getElementById('personnelQrCanvas'), {
+                    text: url, width: 240, height: 240,
+                    colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (err) {
+                console.error('Lỗi tạo mã QR:', err);
+                document.getElementById('personnelQrCanvas').style.display = 'none';
+                const errEl = document.getElementById('personnelQrError');
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Không tạo được mã QR: ' + err.message; }
+            }
+        }
+
