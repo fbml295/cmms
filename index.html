@@ -84,9 +84,12 @@
             </div>
         </div>
 
-        <div id="headerUserStatus" style="margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:1px; font-size:0.78rem; line-height:1.3; white-space:nowrap;">
-            <span id="headerUserAccount" style="color:var(--text-main);">⚪ Chưa đăng nhập</span>
-            <span id="headerUserNetStatus" style="font-size:0.7rem; color:var(--text-muted);">🌐 Có mạng</span>
+        <div id="headerUserStatus" style="margin-left:auto; display:flex; align-items:center; gap:8px; font-size:0.78rem; line-height:1.3; white-space:nowrap;">
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
+                <span id="headerUserAccount" style="color:var(--text-main);">⚪ Chưa đăng nhập</span>
+                <span id="headerUserNetStatus" style="font-size:0.7rem; color:var(--text-muted);">🌐 Có mạng</span>
+            </div>
+            <button class="btn btn-slate" style="padding:4px 8px; font-size:0.7rem;" onclick="logoutAndSwitchAccount()" title="Đăng xuất / đổi tài khoản Google">🚪</button>
         </div>
 
         <input type="file" id="excelFiles" multiple accept=".xlsx, .xls" class="hidden">

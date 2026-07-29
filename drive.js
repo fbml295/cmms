@@ -311,6 +311,21 @@
         }
 
         // Ngắt kết nối Drive: quay lại chế độ làm việc offline (ổ cứng cục bộ), không xóa cấu hình đã lưu
+        // Đăng xuất khỏi Google (thu hồi token thật sự) rồi tải lại trang để quay về màn hình đăng nhập —
+        // dùng khi cần đổi sang tài khoản Google khác.
+        function logoutAndSwitchAccount() {
+            if (!confirm('Đăng xuất khỏi tài khoản Google hiện tại và quay về màn hình đăng nhập?')) return;
+            try {
+                if (driveAccessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2 && google.accounts.oauth2.revoke) {
+                    google.accounts.oauth2.revoke(driveAccessToken, () => location.reload());
+                } else {
+                    location.reload();
+                }
+            } catch (e) {
+                location.reload();
+            }
+        }
+
         function disconnectGoogleDrive() {
             if (appMode !== 'drive' && !driveAccessToken) {
                 alert('Hiện chưa kết nối Google Drive.');
