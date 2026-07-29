@@ -111,19 +111,6 @@
             document.getElementById('iconSidebar')?.classList.remove('mobile-open');
             document.getElementById('mobileNavBackdrop')?.classList.remove('show');
         }
-        excelFiles.addEventListener('change', handleExcelUploadLegacy);
-        searchInput.addEventListener('input', renderDeviceTree);
-        filterImportance.addEventListener('change', renderDeviceTree);
-        btnSummaryReport?.addEventListener('click', () => { closeMobileNav(); closeSidebar(); openSummaryReportModal(); });
-        btnSaveFile.addEventListener('click', saveAndOverwriteFile);
-        btnCompleteAll.addEventListener('click', () => {
-            if (currentPlanSubtab === 'adhoc') completeAllAdhocPlan();
-            else completeAllPlan();
-        });
-        btnPrintPlan.addEventListener('click', () => {
-            if (currentPlanSubtab === 'adhoc') printAdhocMaintenancePlan();
-            else printMaintenancePlan();
-        });
 
         // --- CHUYỂN TAB CHÍNH (WELCOME / DASHBOARD / THIẾT BỊ / NHÂN SỰ) ---
         function switchMainTab(tab) {
@@ -153,6 +140,23 @@
 
         // --- KHỞI CHẠY ỨNG DỤNG & PHỤC HỒI ---
         window.addEventListener('DOMContentLoaded', async () => {
+            // Đăng ký sự kiện cho các hàm nằm ở file khác (device.js, plan.js...) —
+            // phải làm ở đây (sau khi mọi file JS đã tải xong), không được làm ở đầu app.js
+            // vì lúc đó các file kia (tải sau) chưa tồn tại, sẽ gây lỗi dừng cả script.
+            excelFiles.addEventListener('change', handleExcelUploadLegacy);
+            searchInput.addEventListener('input', renderDeviceTree);
+            filterImportance.addEventListener('change', renderDeviceTree);
+            btnSummaryReport?.addEventListener('click', () => { closeMobileNav(); closeSidebar(); openSummaryReportModal(); });
+            btnSaveFile.addEventListener('click', saveAndOverwriteFile);
+            btnCompleteAll.addEventListener('click', () => {
+                if (currentPlanSubtab === 'adhoc') completeAllAdhocPlan();
+                else completeAllPlan();
+            });
+            btnPrintPlan.addEventListener('click', () => {
+                if (currentPlanSubtab === 'adhoc') printAdhocMaintenancePlan();
+                else printMaintenancePlan();
+            });
+
             updateMainHeaderTitle();
             loadAppConfigFromStorage();
             updateHeaderUserStatus();
