@@ -536,6 +536,42 @@
         // ====================  RCA: PHÂN TÍCH NGUYÊN NHÂN GỐC RỄ  =========
         // ==================================================================
 
+        // ---------------------------------------------------------------
+        // HỘP THOẠI XÁC NHẬN XOÁ DÙNG CHUNG (thay cho confirm() mặc định của trình duyệt)
+        // Nút "Xóa" luôn nằm bên trái, "Hủy" bên phải — dùng cho MỌI tính năng có xoá dữ liệu.
+        // Cách dùng: showDeleteConfirm('Xóa nhân sự này?', () => { ...code xoá thật sự... });
+        // ---------------------------------------------------------------
+        let _pendingDeleteConfirmCallback = null;
+
+        function showDeleteConfirm(message, onConfirm) {
+            document.getElementById('deleteConfirmModal')?.remove();
+            _pendingDeleteConfirmCallback = onConfirm;
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'deleteConfirmModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 360px; text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 6px;">🗑️</div>
+                    <div style="font-size: 0.88rem; color: var(--text-main); margin: 0 0 20px; line-height:1.5;">${message}</div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-rose" style="flex:1; padding:10px;" onclick="_confirmDeleteYes()">🗑️ Xóa</button>
+                        <button class="btn btn-slate" style="flex:1; padding:10px;" onclick="_confirmDeleteNo()">Hủy</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        function _confirmDeleteYes() {
+            const cb = _pendingDeleteConfirmCallback;
+            document.getElementById('deleteConfirmModal')?.remove();
+            _pendingDeleteConfirmCallback = null;
+            if (cb) cb();
+        }
+        function _confirmDeleteNo() {
+            document.getElementById('deleteConfirmModal')?.remove();
+            _pendingDeleteConfirmCallback = null;
+        }
+
         function rcaEsc(v) {
             return String(v === undefined || v === null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         }

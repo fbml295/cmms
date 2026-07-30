@@ -308,13 +308,14 @@
         }
 
         function woDelete(id) {
-            if (!confirm('Xóa lệnh công việc này?')) return;
-            Object.keys(workOrders).forEach(d => {
-                workOrders[d] = workOrders[d].filter(o => o.id !== id);
+            showDeleteConfirm('Xóa lệnh công việc này?', () => {
+                Object.keys(workOrders).forEach(d => {
+                    workOrders[d] = workOrders[d].filter(o => o.id !== id);
+                });
+                if (woSelectedId === id) { woSelectedId = null; renderWoDetailEmpty(); }
+                saveWorkOrdersToStorage();
+                renderWorkOrderPage();
             });
-            if (woSelectedId === id) { woSelectedId = null; renderWoDetailEmpty(); }
-            saveWorkOrdersToStorage();
-            renderWorkOrderPage();
         }
 
         // Modal tạo / sửa lệnh

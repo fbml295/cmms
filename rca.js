@@ -73,13 +73,14 @@
         }
 
         function deleteRcaRecord(id) {
-            if (!confirm("Xóa phiếu RCA này? Hành động không thể hoàn tác.")) return;
-            Object.keys(rcaRecords).forEach(key => {
-                rcaRecords[key] = rcaRecords[key].filter(r => r.id !== id);
+            showDeleteConfirm('Xóa phiếu RCA này? Hành động không thể hoàn tác.', () => {
+                Object.keys(rcaRecords).forEach(key => {
+                    rcaRecords[key] = rcaRecords[key].filter(r => r.id !== id);
+                });
+                saveRcaRecordsToStorage();
+                closeRcaEditor();
+                renderRcaList();
             });
-            saveRcaRecordsToStorage();
-            closeRcaEditor();
-            renderRcaList();
         }
 
         // --- DANH SÁCH PHIẾU RCA ---

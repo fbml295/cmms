@@ -123,11 +123,12 @@
         }
 
         function deleteFmeaRecord(id) {
-            if (!confirm('Xóa bản ghi FMEA này? Hành động không thể hoàn tác.')) return;
-            Object.keys(fmeaRecords).forEach(key => { fmeaRecords[key] = fmeaRecords[key].filter(r => r.id !== id); });
-            saveFmeaRecordsToStorage();
-            closeFmeaEditor();
-            renderFmeaList();
+            showDeleteConfirm('Xóa bản ghi FMEA này? Hành động không thể hoàn tác.', () => {
+                Object.keys(fmeaRecords).forEach(key => { fmeaRecords[key] = fmeaRecords[key].filter(r => r.id !== id); });
+                saveFmeaRecordsToStorage();
+                closeFmeaEditor();
+                renderFmeaList();
+            });
         }
 
         // Các phiếu RCA đã liên kết tới 1 bản ghi FMEA (thông qua r.linkedFmeaId)

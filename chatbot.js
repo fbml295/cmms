@@ -113,10 +113,16 @@
         }
 
         function clearChatbotHistory() {
-            if (chatbotHistory.length > 0 && !confirm('Xóa toàn bộ hội thoại hiện tại?')) return;
-            chatbotHistory = [];
-            const box = document.getElementById('chatbotMessages');
-            if (box) box.innerHTML = `<div class="chatbot-msg chatbot-msg-bot">Xin chào 👋 Tôi là trợ lý AI của hệ thống CMMS. Bạn có thể hỏi tôi về bảo trì thiết bị, cách dùng hệ thống, hoặc bất kỳ điều gì cần hỗ trợ.</div>`;
+            const doClear = () => {
+                chatbotHistory = [];
+                const box = document.getElementById('chatbotMessages');
+                if (box) box.innerHTML = `<div class="chatbot-msg chatbot-msg-bot">Xin chào 👋 Tôi là trợ lý AI của hệ thống CMMS. Bạn có thể hỏi tôi về bảo trì thiết bị, cách dùng hệ thống, hoặc bất kỳ điều gì cần hỗ trợ.</div>`;
+            };
+            if (chatbotHistory.length > 0) {
+                showDeleteConfirm('Xóa toàn bộ hội thoại hiện tại?', doClear);
+            } else {
+                doClear();
+            }
         }
 
         function appendChatbotMessage(role, text) {

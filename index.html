@@ -125,36 +125,12 @@
                         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Danh sách nhân viên kỹ thuật · Theo dõi công việc · Thống kê thực hiện bảo trì</div>
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn btn-emerald" style="font-size:0.8rem; padding:6px 14px;" onclick="personnelPageSave(this)">💾 Lưu danh sách</button>
+                        <button class="btn btn-sky" style="font-size:0.8rem; padding:6px 14px;" onclick="openPersonnelManageModal()">📋 Danh sách nhân sự</button>
                     </div>
                 </div>
 
                 <!-- Thống kê tổng quan nhân sự -->
                 <div id="personnelSummaryStats" class="personnel-stat-row"></div>
-
-                <!-- Panel: Danh sách nhân sự -->
-                <div class="personnel-panel">
-                    <div class="personnel-panel-title">📋 Danh sách nhân sự</div>
-                    <div id="personnelTableWrapper">
-                        <div style="color:var(--text-muted); font-style:italic; font-size:0.82rem; padding:12px 0; text-align:center;">Chưa có nhân sự nào. Thêm mới ở form bên dưới.</div>
-                    </div>
-                    <!-- Form thêm mới -->
-                    <div class="personnel-add-form" id="personnelAddForm">
-                        <div class="form-group">
-                            <label>Họ và tên *</label>
-                            <input type="text" id="newPersonName" class="search-input" placeholder="Nguyễn Văn A">
-                        </div>
-                        <div class="form-group">
-                            <label>Chức vụ</label>
-                            <input type="text" id="newPersonPosition" class="search-input" placeholder="Kỹ thuật viên">
-                        </div>
-                        <div class="form-group">
-                            <label>Bộ phận</label>
-                            <input type="text" id="newPersonDept" class="search-input" placeholder="Điện - Cơ khí">
-                        </div>
-                        <button class="btn btn-emerald" style="padding:8px 16px;" onclick="addPersonnelFromPage()">+ Thêm</button>
-                    </div>
-                </div>
 
                 <!-- Panel: Thống kê theo từng nhân sự -->
                 <div class="personnel-panel">

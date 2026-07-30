@@ -145,11 +145,48 @@
         }
 
         function openPersonnelManageModal() {
-            switchMainTab('personnel');
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'personnelManageModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 860px; max-width: 95vw; max-height: 88vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <span class="modal-title">📋 Danh sách nhân sự</span>
+                        <button class="close-modal" onclick="closePersonnelManageModal()">✖</button>
+                    </div>
+                    <div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start;">
+                        <div style="flex: 0 0 220px; min-width:200px;">
+                            <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); margin-bottom:10px;">➕ Thêm nhân sự mới</div>
+                            <div class="form-group">
+                                <label>Họ và tên *</label>
+                                <input type="text" id="newPersonName" class="search-input" placeholder="Nguyễn Văn A">
+                            </div>
+                            <div class="form-group">
+                                <label>Chức vụ</label>
+                                <input type="text" id="newPersonPosition" class="search-input" placeholder="Kỹ thuật viên">
+                            </div>
+                            <div class="form-group">
+                                <label>Bộ phận</label>
+                                <input type="text" id="newPersonDept" class="search-input" placeholder="Điện - Cơ khí">
+                            </div>
+                            <button class="btn btn-emerald" style="width:100%; padding:9px; margin-top:4px;" onclick="addPersonnelFromPage()">+ Thêm</button>
+                        </div>
+                        <div style="flex: 1; min-width: 320px;">
+                            <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); margin-bottom:10px;">Danh sách hiện tại</div>
+                            <div id="personnelTableWrapper"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; text-align:right; border-top:1px solid var(--border-color); padding-top:14px;">
+                        <button class="btn btn-emerald" onclick="personnelPageSave(this)">💾 Lưu danh sách</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            renderPersonnelTable();
         }
 
-        function renderPersonnelManageModal() {
-            // Giờ dùng trang Nhân sự thay cho modal — giữ hàm này để tương thích
+        function closePersonnelManageModal() {
+            document.getElementById('personnelManageModal')?.remove();
             renderPersonnelPage();
         }
 
@@ -352,6 +389,7 @@
                     </td>
                     <td style="padding:9px 10px; text-align:center;">
                         <button class="btn btn-slate" style="padding:4px 10px; font-size:0.73rem;" onclick="openPersonnelLogModal('${s.person.name.replace(/'/g,"\\'")}')">📜 Nhật ký</button>
+                        <button class="btn btn-violet" style="padding:4px 8px; font-size:0.73rem; margin-left:4px;" onclick="exportPersonnelQrCode('${s.person.name.replace(/'/g,"\\'")}')" title="Mã QR việc riêng của người này">📱</button>
                     </td>
                 </tr>`;
             });
@@ -386,11 +424,12 @@
         }
 
         function removePersonnelRowPage(id) {
-            if (!confirm('Xóa nhân sự này?')) return;
-            personnelList = personnelList.filter(p => p.id !== id);
-            savePersonnelToStorage();
-            renderPersonnelPage();
-            renderDashboard();
+            showDeleteConfirm('Xóa nhân sự này?', () => {
+                personnelList = personnelList.filter(p => p.id !== id);
+                savePersonnelToStorage();
+                renderPersonnelPage();
+                renderDashboard();
+            });
         }
 
         async function personnelPageSave(btn) {
@@ -494,7 +533,7 @@
                 if (imported.length > 0) {
                     personnelList = imported;
                     savePersonnelToStorage();
-                    renderPersonnelManageModal();
+                    renderPersonnelPage();
                     renderDashboard();
                 }
             } catch (err) {
@@ -534,7 +573,7 @@
                 await saveTechnicianDirHandleToDB(techDir);
                 await loadPersonnelCsvFromFile();
                 updatePersonnelDirStatusUI(true, `technician (trong "${dirHandle.name}")`);
-                renderPersonnelManageModal();
+                renderPersonnelPage();
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     alert("Không thể chọn thư mục: " + err.message);

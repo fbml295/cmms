@@ -526,10 +526,12 @@
         }
 
         function removeFromAdhocPlan(planId) {
-            adhocPlan = adhocPlan.filter(p => p.planId !== planId);
-            if (selectedAdhocTaskId === planId) selectedAdhocTaskId = null;
-            saveAdhocPlanToLocalStorage();
-            renderAdhocPlan();
+            showDeleteConfirm('Xóa mục này khỏi Kế hoạch bảo trì đột xuất?', () => {
+                adhocPlan = adhocPlan.filter(p => p.planId !== planId);
+                if (selectedAdhocTaskId === planId) selectedAdhocTaskId = null;
+                saveAdhocPlanToLocalStorage();
+                renderAdhocPlan();
+            });
         }
 
         function updateAdhocJobTextInline(planId, element) {
@@ -1357,9 +1359,11 @@
         }
 
         function removeFromPlan(planId) {
-            maintPlan = maintPlan.filter(p => p.planId !== planId);
-            savePlanToLocalStorage();
-            renderMaintPlan();
+            showDeleteConfirm('Xóa mục này khỏi Kế hoạch bảo trì định kỳ?', () => {
+                maintPlan = maintPlan.filter(p => p.planId !== planId);
+                savePlanToLocalStorage();
+                renderMaintPlan();
+            });
         }
 
         // Mục 8: cập nhật Ngày thực hiện (ngăn phải) cho hạng mục bảo trì theo chu kỳ
