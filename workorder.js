@@ -629,11 +629,24 @@
                         <input type="checkbox" id="woC_addRCA" style="width:14px; height:14px; accent-color:var(--color-rose);">
                         <span style="color:var(--color-rose);">🔍 Tạo phiếu RCA từ lệnh công việc này</span>
                     </label>
-                </div>` : `
+                </div>
+                ${ref.kind === 'cyclic' ? `
+                <div class="wo-form-field">
+                    <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:600; color:var(--text-muted); font-size:0.72rem;">
+                        <input type="checkbox" id="woC_pushAdhoc" style="width:14px; height:14px; accent-color:var(--color-amber);">
+                        <span style="color:var(--color-amber);">⚠️ Phát hiện hư hỏng — đẩy sang Bảo trì đột xuất</span>
+                    </label>
+                </div>` : ''}` : `
                 <div class="wo-form-field" style="margin-top:4px;">
                     <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:600; color:var(--text-muted); font-size:0.72rem;">
                         <input type="checkbox" id="woC_createRca" style="width:14px; height:14px; accent-color:var(--color-rose);">
                         Tạo phiếu RCA từ lệnh công việc này
+                    </label>
+                </div>
+                <div class="wo-form-field">
+                    <label style="display:flex; align-items:center; gap:6px; text-transform:none; font-weight:600; color:var(--text-muted); font-size:0.72rem;">
+                        <input type="checkbox" id="woC_pushAdhoc2" style="width:14px; height:14px; accent-color:var(--color-amber);">
+                        <span style="color:var(--color-amber);">⚠️ Phát hiện hư hỏng — đẩy sang Bảo trì đột xuất</span>
                     </label>
                 </div>`;
 
@@ -678,6 +691,16 @@
             const o = found.order;
             const now = new Date().toLocaleString('vi-VN');
 
+            // Đọc TOÀN BỘ giá trị các trường trong form (kể cả checkbox "Tạo phiếu RCA")
+            // TRƯỚC KHI xoá modal khỏi DOM — nếu đọc sau khi xoá, mọi giá trị sẽ luôn rỗng/false.
+            const performedBy = document.getElementById('woC_performedBy')?.value.trim() || o.assignee || '';
+            const checkedBy   = document.getElementById('woC_checkedBy')?.value.trim()   || '';
+            const materials   = document.getElementById('woC_materials')?.value.trim()   || '';
+            const result      = document.getElementById('woC_result')?.value              || 'pass';
+            const downtime    = document.getElementById('woC_downtime')?.value.trim()     || '';
+            const wantsRCA    = !!(document.getElementById('woC_addRCA')?.checked || document.getElementById('woC_createRca')?.checked);
+            const wantsAdhoc  = !!(document.getElementById('woC_pushAdhoc')?.checked || document.getElementById('woC_pushAdhoc2')?.checked);
+
             // Thu thập thông tin cơ bản của lệnh
             o.status = 'done';
             if (!o.startedAt) o.startedAt = document.getElementById('woC_startedAt')?.value || now;
@@ -700,13 +723,7 @@
                     const pad = n => String(n).padStart(2,'0');
                     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
                 })();
-                const performedBy = document.getElementById('woC_performedBy')?.value.trim() || o.assignee || '';
-                const checkedBy   = document.getElementById('woC_checkedBy')?.value.trim()   || '';
-                const materials   = document.getElementById('woC_materials')?.value.trim()   || '';
-                const result      = document.getElementById('woC_result')?.value              || 'pass';
-                const downtime    = document.getElementById('woC_downtime')?.value.trim()     || '';
-                const notes       = o.completionNotes;
-                const addRCA      = document.getElementById('woC_addRCA')?.checked;
+                const notes = o.completionNotes;
 
                 if (ref.kind === 'cyclic') {
                     // Cập nhật ngày bảo trì cuối trong file Excel
@@ -742,7 +759,7 @@
                 renderWorkOrderPage();
                 renderWoDetail(o);
 
-                if (addRCA) {
+                if (wantsRCA) {
                     const r = createRcaRecord(
                         { rowIdx: planItem.rowIdx, item: planItem.item, name: planItem.name, area: planItem.area },
                         notes || planItem.jobText || '',
@@ -750,6 +767,14 @@
                         `${ref.kind === 'adhoc' ? 'Bảo trì đột xuất' : planItem.cycleLabel} — hoàn thành ${performedAt} (Lệnh ${o.id})`
                     );
                     if (r) { switchMainTab('rca'); setTimeout(() => { renderRcaList(); openRcaEditor(r.id); }, 300); }
+                }
+                if (wantsAdhoc && ref.kind === 'cyclic') {
+                    pushWoFindingToAdhocPlan(
+                        planItem.item, planItem.name,
+                        `Phát hiện qua bảo trì ${planItem.cycleLabel || ''} (Lệnh ${o.id}): ${notes || ''}`.trim(),
+                        `Đẩy từ lệnh công việc ${o.id} — ${performedAt}`
+                    );
+                    alert('⚠️ Đã thêm vào Kế hoạch bảo trì đột xuất để theo dõi tiếp.');
                 }
             } else {
                 // ── KHÔNG LIÊN KẾT: chỉ đóng lệnh, ghi nhật ký nếu có thiết bị ──
@@ -764,16 +789,23 @@
                     });
                     writeDeviceLogFile(o.device);
                 }
-                const createRca = document.getElementById('woC_createRca')?.checked;
                 renderWorkOrderPage();
                 renderWoDetail(o);
-                if (createRca) {
+                if (wantsRCA) {
                     const r = createRcaRecord(
                         { item: o.device || '', name: o.deviceName || '', area: '' },
                         `Từ lệnh công việc ${o.id}: ${o.title}${o.completionNotes ? '\n\nGhi chú: ' + o.completionNotes : ''}`,
                         'workorder', o.id + ' — ' + o.title
                     );
                     if (r) { switchMainTab('rca'); setTimeout(() => { renderRcaList(); openRcaEditor(r.id); }, 300); }
+                }
+                if (wantsAdhoc && o.device) {
+                    pushWoFindingToAdhocPlan(
+                        o.device, o.deviceName || '',
+                        `Phát hiện qua lệnh công việc "${o.title}" (${o.id}): ${o.completionNotes || ''}`.trim(),
+                        `Đẩy từ lệnh công việc ${o.id} — ${now}`
+                    );
+                    alert('⚠️ Đã thêm vào Kế hoạch bảo trì đột xuất để theo dõi tiếp.');
                 }
             }
         }

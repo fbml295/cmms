@@ -469,6 +469,36 @@
             wrap.innerHTML = html;
         }
 
+        // Dùng khi hoàn thành 1 lệnh công việc (bảo trì ngày/định kỳ) mà phát hiện hư hỏng —
+        // tự động thêm 1 mục mới vào Kế hoạch bảo trì đột xuất để theo dõi tiếp, không cần thao tác thủ công.
+        function pushWoFindingToAdhocPlan(deviceCode, deviceName, jobText, sourceNote) {
+            let rowIdx = -1, area = '';
+            if (currentFileIdx !== -1 && deviceCode) {
+                const file = loadedFiles[currentFileIdx];
+                const struct = analyzeStructure(file.rows);
+                for (let i = 0; i < file.rows.length; i++) {
+                    if (struct.item !== -1 && String(file.rows[i][struct.item]).trim() === String(deviceCode).trim()) {
+                        rowIdx = i;
+                        area = struct.area !== -1 && file.rows[i][struct.area] ? String(file.rows[i][struct.area]).trim() : '';
+                        break;
+                    }
+                }
+            }
+            if (rowIdx !== -1) {
+                return addToAdhocPlan(rowIdx, jobText || '', sourceNote || '');
+            }
+            // Không tìm thấy dòng dữ liệu tương ứng (thiết bị thuộc file khác chưa mở) — vẫn thêm thủ công
+            const newPlanId = Date.now() + Math.random().toString(36).substr(2, 5);
+            adhocPlan.push({
+                planId: newPlanId, rowIdx: -1, item: deviceCode || '', name: deviceName || '', area: area,
+                jobText: jobText || '', deviceInfo: '', sourceNote: sourceNote || '',
+                timeline: [], addedAt: getCurrentTimestamp(), assignedTo: '', priority: 2, waitingMaterials: false
+            });
+            saveAdhocPlanToLocalStorage();
+            renderAdhocPlan();
+            return newPlanId;
+        }
+
         function addToAdhocPlan(rowIdx, description, sourceNote) {
             if (currentFileIdx === -1) return;
             const file = loadedFiles[currentFileIdx];
