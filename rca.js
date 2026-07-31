@@ -476,10 +476,28 @@
                             <label>🧩 Liên kết với dạng sai hỏng FMEA (tùy chọn)</label>
                             <select class="search-input" ${readonlyAttr} onchange="updateRcaSimpleField('linkedFmeaId', this.value)">
                                 <option value="">— Không liên kết —</option>
-                                ${getAllFmeaRecordsFlat().map(f => `<option value="${f.id}" ${r.linkedFmeaId === f.id ? 'selected' : ''}>${rcaEsc(f.item || '(chưa gắn thiết bị)')} — ${rcaEsc(f.failureMode || '(chưa nhập dạng sai hỏng)')} (RPN ${fmeaRpn(f)})</option>`).join('')}
+                                ${(() => {
+                                    const allFmea = getAllFmeaRecordsFlat();
+                                    const sameDevice = allFmea.filter(f => r.item && f.item === r.item);
+                                    const others = allFmea.filter(f => !(r.item && f.item === r.item));
+                                    const opt = f => `<option value="${f.id}" ${r.linkedFmeaId === f.id ? 'selected' : ''}>${rcaEsc(f.item || '(chưa gắn thiết bị)')} — ${rcaEsc(f.failureMode || '(chưa nhập dạng sai hỏng)')} (RPN ${fmeaRpn(f)})</option>`;
+                                    let html = '';
+                                    if (sameDevice.length > 0) html += `<optgroup label="🎯 Cùng thiết bị (${r.item})">${sameDevice.map(opt).join('')}</optgroup>`;
+                                    if (others.length > 0) html += `<optgroup label="Thiết bị khác">${others.map(opt).join('')}</optgroup>`;
+                                    return html;
+                                })()}
                             </select>
                             <div style="font-size:0.72rem; color: var(--text-muted); margin-top:4px;">Nếu sự cố này khớp với 1 dạng sai hỏng đã có trong FMEA, chọn để hệ thống tự đếm số lần thực tế xảy ra, hỗ trợ gợi ý điểm Tần suất (Occurrence).</div>
                         </div>
+                    </div>
+                    <div class="rca-field-row" style="margin-bottom:0;" id="rcaNoFmeaHint">
+                        ${(() => {
+                            const hasSameDeviceFmea = r.item && getAllFmeaRecordsFlat().some(f => f.item === r.item);
+                            if (!r.linkedFmeaId && !hasSameDeviceFmea && r.item) {
+                                return `<div style="font-size:0.72rem; color: var(--color-amber); padding:6px 0;">⚠️ Thiết bị này chưa có bản ghi FMEA nào — cân nhắc tạo mới sau khi hoàn tất RCA, để rút kinh nghiệm cho lần sau.</div>`;
+                            }
+                            return '';
+                        })()}
                     </div>
                 </div>
 
@@ -599,9 +617,19 @@
                 await writeDeviceRcaFile(r.item);
             }
 
+            const linkedFmeaId = r.linkedFmeaId;
             alert(`Đã hoàn tất phiếu RCA${r.item ? ` cho thiết bị "${r.item}"` : ''}!${logDirHandle ? ' Đã sao lưu vào thư mục "logdata".' : ' (Chưa kết nối thư mục "logdata" nên chưa sao lưu file — vào "📁 Quản lý dữ liệu" > "📂 Chọn thư mục dự án" để kết nối.)'}`);
             closeRcaEditor();
             renderRcaList();
+
+            // Đóng vòng lặp cải tiến: nếu RCA này có liên kết FMEA, nhắc cập nhật lại RPN/tần suất
+            // dựa trên phát hiện thực tế vừa ghi nhận — đây là bước hay bị bỏ sót nhất theo chuẩn ngành.
+            if (linkedFmeaId) {
+                if (confirm('Phiếu RCA này có liên kết với 1 dạng sai hỏng trong FMEA.\nBạn có muốn mở lại bản ghi FMEA đó ngay để cập nhật điểm Tần suất/RPN dựa trên phát hiện vừa rồi không?')) {
+                    switchMainTab('fmea');
+                    setTimeout(() => { renderFmeaList(); openFmeaEditor(linkedFmeaId); }, 300);
+                }
+            }
         }
 
         // --- IN PHIẾU RCA ---

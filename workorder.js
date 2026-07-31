@@ -613,7 +613,7 @@
                 <div class="wo-form-row">
                     <div class="wo-form-field">
                         <label>Kết quả *</label>
-                        <select id="woC_result" class="search-input" required>
+                        <select id="woC_result" class="search-input" required onchange="woResultChanged(this.value)">
                             <option value="pass">✅ Đạt</option>
                             <option value="note">⚠️ Đạt, có lưu ý</option>
                             <option value="fail">❌ Không đạt</option>
@@ -683,6 +683,15 @@
                 </div>
             `;
             document.body.appendChild(modal);
+        }
+
+        // Tự động tick sẵn ô "Tạo phiếu RCA" khi chọn kết quả "Không đạt" — người dùng vẫn có thể bỏ tick nếu thấy không cần.
+        function woResultChanged(value) {
+            const rcaCheckbox = document.getElementById('woC_addRCA');
+            if (!rcaCheckbox) return;
+            if (value === 'fail') {
+                rcaCheckbox.checked = true;
+            }
         }
 
         function woConfirmComplete(id) {

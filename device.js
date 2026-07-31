@@ -1075,6 +1075,51 @@
             return struct;
         }
 
+        // Tự động thêm vào Kế hoạch bảo trì định kỳ mọi thiết bị đã ĐẾN HẠN/QUÁ HẠN
+        // (chỉ áp dụng cho chu kỳ đã có mốc bảo trì lần trước — lần đầu tiên vẫn cần xác định thủ công).
+        // Được gọi mỗi khi dữ liệu thiết bị được xử lý lại (mở file, sau khi hoàn thành công việc...).
+        function autoAddDueDevicesToPlan() {
+            if (currentFileIdx === -1 || !allValidRows.length) return;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const addedItems = [];
+
+            allValidRows.forEach(device => {
+                const cycles = [
+                    { active: !!device.day, last: device.lastMaintDay, cycleVal: device.day, type: 'day', label: 'Ngày' },
+                    { active: !!device.month, last: device.lastMaintMonth, cycleVal: device.month, type: 'month', label: 'Tháng' },
+                    { active: !!device.year, last: device.lastMaintYear, cycleVal: device.year, type: 'year', label: 'Năm' }
+                ].filter(c => c.active);
+
+                cycles.forEach(c => {
+                    const lastVal = (c.last || '').trim();
+                    const isEmpty = !lastVal || lastVal.toLowerCase() === 'chưa có';
+                    if (isEmpty) return; // chưa có mốc bảo trì lần đầu — cần xác định thủ công
+
+                    const nextDateStr = calculateNextDate(c.last, c.cycleVal, c.type);
+                    if (!nextDateStr || !nextDateStr.includes('/')) return;
+                    const [d, m, y] = nextDateStr.split('/');
+                    const nextDate = new Date(y, m - 1, d);
+                    if (isNaN(nextDate.getTime()) || nextDate > today) return; // chưa tới hạn
+
+                    const already = maintPlan.some(p => p.rowIdx === device.rowIdx && p.cycleType === c.type);
+                    if (already) return;
+
+                    addToPlan(device.rowIdx, c.type);
+                    addedItems.push(`${device.item} — ${c.label}`);
+                });
+            });
+
+            if (addedItems.length > 0) {
+                console.log(`🔔 Tự động thêm ${addedItems.length} mục vào Kế hoạch bảo trì (đến hạn):`, addedItems);
+                const banner = document.getElementById('planAutoAddBanner');
+                if (banner) {
+                    banner.textContent = `🔔 Vừa tự động thêm ${addedItems.length} mục đến hạn vào Kế hoạch: ${addedItems.slice(0, 5).join(', ')}${addedItems.length > 5 ? '...' : ''}`;
+                    banner.classList.remove('hidden');
+                }
+            }
+        }
+
         function processDataset() {
             if (currentFileIdx === -1) return;
             const file = loadedFiles[currentFileIdx];
@@ -1129,6 +1174,7 @@
 
             deviceCount.innerText = `${allValidRows.length} thiết bị`;
             renderDeviceTree();
+            autoAddDueDevicesToPlan();
             if (currentMainTab === 'dashboard') {
                 renderDashboard();
             }
