@@ -300,6 +300,7 @@
                     <div class="rca-toolbar">
                         <span class="rca-toolbar-title">🔍 Phân tích nguyên nhân gốc rễ (RCA)</span>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <input type="text" id="rcaDeviceSearchInput" class="search-input" style="width:180px; font-size:0.75rem; padding:5px 8px;" placeholder="🔎 Tìm theo mã/tên thiết bị..." oninput="renderRcaList()">
                             <select id="rcaStatusFilterSelect" class="filter-select" style="font-size:0.75rem; padding:5px 8px;" onchange="renderRcaList()">
                                 <option value="all">Tất cả trạng thái</option>
                                 <option value="draft">📝 Đang phân tích (nháp)</option>

@@ -178,7 +178,9 @@
             let maintainedCount = 0;
             let overdueCount = 0;
             let neverMaintainedCount = 0;
+            let dueSoonCount = 0;
             const overdueDevices = [];
+            const dueSoonDevices = [];
             const importanceCount = { 3: 0, 2: 0, 1: 0, 0: 0 };
             const adhocStatusCounts = computeAdhocStatusCounts();
 
@@ -196,6 +198,9 @@
                 if (status.isOverdue) {
                     overdueCount++;
                     overdueDevices.push({ device, cycles: status.overdueCycles });
+                } else if (status.isDueSoon) {
+                    dueSoonCount++;
+                    dueSoonDevices.push({ device, cycles: status.dueSoonCycles });
                 }
             });
 
@@ -218,6 +223,28 @@
                 overdueListHtml += '</div>';
                 if (overdueDevices.length > 30) {
                     overdueListHtml += `<div class="italic" style="color: var(--text-muted); font-size: 0.78rem; margin-top: 8px;">... và ${overdueDevices.length - 30} thiết bị quá hạn khác.</div>`;
+                }
+            }
+
+            let dueSoonListHtml = '';
+            if (dueSoonDevices.length === 0) {
+                dueSoonListHtml = `<div class="italic" style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0;">Không có thiết bị nào sắp đến hạn trong 7 ngày tới.</div>`;
+            } else {
+                dueSoonListHtml = '<div class="overdue-list">';
+                dueSoonDevices.slice(0, 30).forEach(o => {
+                    dueSoonListHtml += `
+                        <div class="overdue-item" style="border-left-color: var(--color-amber);">
+                            <div class="overdue-item-name">
+                                <strong>${o.device.item} — ${o.device.name}</strong>
+                                <span>${o.device.cabinet ? 'Tủ: ' + o.device.cabinet : ''}</span>
+                            </div>
+                            <span class="overdue-item-badge" style="background: rgba(245,158,11,0.15); color: var(--color-amber); border-color: rgba(245,158,11,0.35);">Sắp đến hạn: ${o.cycles.join(', ')}</span>
+                        </div>
+                    `;
+                });
+                dueSoonListHtml += '</div>';
+                if (dueSoonDevices.length > 30) {
+                    dueSoonListHtml += `<div class="italic" style="color: var(--text-muted); font-size: 0.78rem; margin-top: 8px;">... và ${dueSoonDevices.length - 30} thiết bị sắp đến hạn khác.</div>`;
                 }
             }
 
@@ -252,6 +279,12 @@
                         <div class="stat-label">Đã quá hạn bảo trì</div>
                         <div class="stat-value">${overdueCount}</div>
                         <div class="stat-sub">Vượt mốc chu kỳ bảo trì tính đến hôm nay</div>
+                    </div>
+                    <div class="stat-card c-amber">
+                        <div class="stat-icon">🔔</div>
+                        <div class="stat-label">Sắp đến hạn (≤7 ngày)</div>
+                        <div class="stat-value">${dueSoonCount}</div>
+                        <div class="stat-sub">Chủ động chuẩn bị nhân lực/vật tư trước</div>
                     </div>
                     <div class="stat-card" style="border-left-color:#64748b;">
                         <div class="stat-icon">📭</div>
@@ -330,6 +363,11 @@
                 <div class="dashboard-section-title">⏰ Danh sách thiết bị quá hạn bảo trì</div>
                 <div class="dashboard-split-panel">
                     ${overdueListHtml}
+                </div>
+
+                <div class="dashboard-section-title">🔔 Sắp đến hạn bảo trì (trong 7 ngày tới)</div>
+                <div class="dashboard-split-panel">
+                    ${dueSoonListHtml}
                 </div>
             `;
         }

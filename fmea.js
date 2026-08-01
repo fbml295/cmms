@@ -41,6 +41,17 @@
             };
         }
 
+        // Mở FMEA editor cho 1 bản ghi mới, gán sẵn mã/tên thiết bị (dùng khi nhắc tạo FMEA lúc thêm thiết bị mới)
+        function openFmeaEditorForDevice(itemVal, nameVal) {
+            fmeaEditingRecord = createFmeaRecord();
+            fmeaEditingRecord.item = itemVal || '';
+            fmeaEditingRecord.name = nameVal || '';
+            fmeaRelocateRecordKey(fmeaEditingRecord, itemVal || '');
+            document.getElementById('fmeaListView').classList.add('hidden');
+            document.getElementById('fmeaEditorView').classList.remove('hidden');
+            renderFmeaEditor();
+        }
+
         function openFmeaEditor(id) {
             if (id) {
                 fmeaEditingRecord = findFmeaRecordById(id);

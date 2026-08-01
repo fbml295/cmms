@@ -1194,6 +1194,8 @@
             let hasAnyRecord = false;
             let isOverdue = false;
             let overdueCycles = [];
+            let isDueSoon = false;
+            let dueSoonCycles = [];
 
             cycles.forEach(c => {
                 const lastVal = (c.last || '').trim();
@@ -1204,9 +1206,17 @@
                     if (nextDateStr && nextDateStr.includes('/')) {
                         const [d, m, y] = nextDateStr.split('/');
                         const nextDate = new Date(y, m - 1, d);
-                        if (!isNaN(nextDate.getTime()) && nextDate < today) {
-                            isOverdue = true;
-                            overdueCycles.push(c.label);
+                        if (!isNaN(nextDate.getTime())) {
+                            if (nextDate < today) {
+                                isOverdue = true;
+                                overdueCycles.push(c.label);
+                            } else {
+                                const diffDays = Math.round((nextDate - today) / (1000 * 60 * 60 * 24));
+                                if (diffDays <= 7) {
+                                    isDueSoon = true;
+                                    dueSoonCycles.push(`${c.label} (còn ${diffDays} ngày)`);
+                                }
+                            }
                         }
                     }
                 }
@@ -1217,6 +1227,8 @@
                 hasAnyRecord: hasAnyRecord,
                 isOverdue: isOverdue,
                 overdueCycles: overdueCycles,
+                isDueSoon: isDueSoon,
+                dueSoonCycles: dueSoonCycles,
                 neverMaintained: cycles.length > 0 && !hasAnyRecord
             };
         }
@@ -1629,6 +1641,15 @@
             } else {
                 closeAddDeviceModal();
                 alert(`Đã thêm thiết bị "${itemVal}" vào danh sách! Hãy bấm "💾 Lưu dữ liệu" ở khung "Quản lý dữ liệu" để ghi trực tiếp vào file Excel.`);
+                if (rateVal >= 2) {
+                    if (confirm(`Thiết bị "${itemVal}" được đánh giá mức độ quan trọng cao — bạn có muốn tạo ngay 1 bản ghi FMEA (phân tích rủi ro phòng ngừa) cho thiết bị này không?\n\nViệc này giúp chủ động nhận diện các dạng sai hỏng có thể xảy ra ngay từ đầu, thay vì chỉ chờ đến khi hỏng mới phân tích (RCA).`)) {
+                        switchMainTab('fmea');
+                        setTimeout(() => {
+                            renderFmeaList();
+                            openFmeaEditorForDevice(itemVal, nameVal);
+                        }, 300);
+                    }
+                }
             }
         }
 

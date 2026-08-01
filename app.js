@@ -517,7 +517,9 @@
             if (isNaN(nextDate.getTime())) return '';
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            return nextDate < today ? 'overdue' : 'highlight';
+            if (nextDate < today) return 'overdue';
+            const diffDays = Math.round((nextDate - today) / (1000 * 60 * 60 * 24));
+            return diffDays <= 7 ? 'highlight' : ''; // "highlight" = sắp đến hạn trong vòng 7 ngày
         }
 
         // --- FORM CHỈNH SỬA THÔNG TIN THIẾT BỊ ---

@@ -108,8 +108,17 @@
             let visible = all;
             if (statusFilter !== 'all') visible = visible.filter(r => r.status === statusFilter);
 
+            const searchInput = document.getElementById('rcaDeviceSearchInput');
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            if (searchTerm) {
+                visible = visible.filter(r =>
+                    (r.item || '').toLowerCase().includes(searchTerm) ||
+                    (r.name || '').toLowerCase().includes(searchTerm)
+                );
+            }
+
             if (visible.length === 0) {
-                container.innerHTML = `<div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 30px;">Không có phiếu RCA nào khớp với bộ lọc. Tích chọn ô "🔍 RCA" khi ghi nhận hoàn thành bảo trì, hoặc bấm "➕ Tạo phiếu RCA mới" để bắt đầu.</div>`;
+                container.innerHTML = `<div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 30px;">${searchTerm ? 'Không tìm thấy phiếu RCA nào khớp với thiết bị bạn tìm.' : 'Không có phiếu RCA nào khớp với bộ lọc. Tích chọn ô "🔍 RCA" khi ghi nhận hoàn thành bảo trì, hoặc bấm "➕ Tạo phiếu RCA mới" để bắt đầu.'}</div>`;
                 return;
             }
 
