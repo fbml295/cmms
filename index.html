@@ -244,6 +244,7 @@
                     </div>
 
                     <div id="planSubtabCyclic">
+                        <div id="maintPlanCalendarSection"></div>
                         <div class="plan-container" id="planContainer">
                             <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 50px;">
                                 Chưa có thiết bị nào trong hàng chờ bảo dưỡng.<br>
@@ -268,7 +269,8 @@
                         </div>
                         <div class="adhoc-section-heading" style="margin: 4px 15px 0 15px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
                             <span>🔧 NỘI DUNG CÔNG VIỆC</span>
-                            <div style="display:flex; align-items:center; gap:6px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <button class="btn btn-violet" style="padding:4px 10px; font-size:0.72rem;" onclick="openManualAdhocModal()" title="Thêm 1 hạng mục không có trong danh mục thiết bị (data) của dự án">➕ Thêm việc không có trong danh mục</button>
                                 <label style="font-size:0.72rem; color:var(--text-muted); font-weight:400;">Lọc trạng thái:</label>
                                 <select id="adhocStatusFilterSelect" class="filter-select" style="font-size:0.72rem; padding:4px 6px;" onchange="filterAdhocByStatus(this.value)">
                                     <option value="all">Tất cả</option>

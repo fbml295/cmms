@@ -390,6 +390,23 @@
                 if (!rootRes.ok) throw new Error('Không truy cập được Folder ID đã nhập (kiểm tra lại ID hoặc quyền chia sẻ).');
                 const rootInfo = await rootRes.json();
 
+                // Xoá sạch dữ liệu của dự án trước đó khỏi bộ nhớ TRƯỚC khi nạp dự án mới —
+                // tránh dữ liệu dự án cũ còn sót lại/hiển thị nhầm khi dự án mới chưa có file tương ứng trên Drive.
+                loadedFiles = [];
+                allValidRows = [];
+                currentFileIdx = -1;
+                maintPlan = []; localStorage.setItem('maintPlan', JSON.stringify(maintPlan));
+                adhocPlan = []; localStorage.setItem('adhocPlan', JSON.stringify(adhocPlan));
+                adhocCampaign = { startDate: '', endDate: '' }; localStorage.setItem('adhocCampaign', JSON.stringify(adhocCampaign));
+                adhocCampaignHistory = []; localStorage.setItem('adhocCampaignHistory', JSON.stringify(adhocCampaignHistory));
+                rcaRecords = {}; localStorage.setItem('rcaRecords', JSON.stringify(rcaRecords));
+                workOrders = {}; localStorage.setItem('workOrders', JSON.stringify(workOrders));
+                fmeaRecords = {}; localStorage.setItem('fmeaRecords', JSON.stringify(fmeaRecords));
+                personnelList = []; localStorage.setItem('personnelList', JSON.stringify(personnelList));
+                saveCompanyInfo({ company: '', department: '', lineName: '' });
+                renderMaintPlan(); renderAdhocPlan(); renderRcaList(); renderFmeaList();
+                renderWorkOrderPage(); renderPersonnelPage(); updateMainHeaderTitle();
+
                 // 1. Thư mục con "data" — file Excel dữ liệu (chấp nhận cả .xlsx/.xls thật lẫn Google Sheets gốc)
                 driveDataFolderId = await driveFindOrCreateFolder(driveFolderId, 'data');
                 const filesInData = await driveListFilesInFolder(driveDataFolderId);

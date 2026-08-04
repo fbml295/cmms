@@ -1639,6 +1639,71 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
         }
+
+        /* ===== LỊCH THÁNG — KẾ HOẠCH BẢO TRÌ ĐỊNH KỲ ===== */
+        #maintPlanCalendarSection {
+            margin: 10px 15px 12px 15px;
+            padding: 10px 12px;
+            background-color: var(--bg-panel-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .maintcal-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .maintcal-nav-btn { padding: 3px 10px; font-size: 0.78rem; }
+        .maintcal-monthlabel { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+        .maintcal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .maintcal-weekday {
+            text-align: center;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-bottom: 4px;
+        }
+        .maintcal-cell {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: all 0.12s ease;
+        }
+        .maintcal-cell:hover { background: rgba(148, 163, 184, 0.12); }
+        .maintcal-cell.maintcal-empty { cursor: default; }
+        .maintcal-cell.maintcal-empty:hover { background: transparent; }
+        .maintcal-cell.maintcal-today { border-color: var(--color-sky); color: var(--color-sky); font-weight: 700; }
+        .maintcal-cell.maintcal-hasjob { background: rgba(245, 158, 11, 0.12); color: var(--color-amber); font-weight: 600; }
+        .maintcal-cell.maintcal-selected { background: var(--color-sky); color: white; font-weight: 700; }
+        .maintcal-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 3px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            background: var(--color-rose);
+            color: white;
+            border-radius: 8px;
+            min-width: 13px;
+            height: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2px;
+        }
+        .maintcal-cell.maintcal-selected .maintcal-badge { background: white; color: var(--color-sky); }
         .adhoc-campaign-row {
             display: flex;
             align-items: center;

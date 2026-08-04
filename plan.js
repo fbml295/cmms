@@ -499,6 +499,64 @@
             return newPlanId;
         }
 
+        // Thêm 1 hạng mục Bảo trì đột xuất KHÔNG gắn với dòng dữ liệu Excel nào —
+        // dùng cho việc phát sinh ngoài danh mục thiết bị (sửa cơ sở vật chất, vệ sinh khu vực chung, thiết bị mượn tạm...).
+        function openManualAdhocModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'manualAdhocModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 420px; max-width: 92vw;">
+                    <div class="modal-header">
+                        <span class="modal-title">➕ Thêm việc không có trong danh mục</span>
+                        <button class="close-modal" onclick="document.getElementById('manualAdhocModal').remove()">✖</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Mã định danh (tuỳ chọn)</label>
+                        <input type="text" id="manualAdhoc_item" class="search-input" placeholder="VD: KV-KHO (để trống nếu không cần)">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên / Mô tả khu vực hoặc hạng mục *</label>
+                        <input type="text" id="manualAdhoc_name" class="search-input" placeholder="VD: Sửa cửa kho vật tư">
+                    </div>
+                    <div class="form-group">
+                        <label>Nội dung công việc cần làm</label>
+                        <textarea id="manualAdhoc_job" class="log-textarea" placeholder="Mô tả cụ thể công việc cần thực hiện..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Mức ưu tiên</label>
+                        <select id="manualAdhoc_priority" class="search-input">
+                            <option value="0">Chưa đánh giá</option>
+                            <option value="1">★ Ưu tiên 3</option>
+                            <option value="2" selected>★★ Ưu tiên 2</option>
+                            <option value="3">★★★ Ưu tiên 1 (khẩn)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-emerald" style="width:100%; padding:9px; margin-top:6px;" onclick="saveManualAdhocTask()">💾 Thêm vào Bảo trì đột xuất</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function saveManualAdhocTask() {
+            const item = document.getElementById('manualAdhoc_item')?.value.trim() || '';
+            const name = document.getElementById('manualAdhoc_name')?.value.trim() || '';
+            const jobText = document.getElementById('manualAdhoc_job')?.value.trim() || '';
+            const priority = parseInt(document.getElementById('manualAdhoc_priority')?.value) || 0;
+
+            if (!name) { alert('Vui lòng nhập Tên / Mô tả khu vực hoặc hạng mục.'); return; }
+
+            const newPlanId = Date.now() + Math.random().toString(36).substr(2, 5);
+            adhocPlan.push({
+                planId: newPlanId, rowIdx: -1, item: item, name: name, area: '',
+                jobText: jobText, deviceInfo: '', sourceNote: 'Thêm thủ công — không có trong danh mục dữ liệu',
+                timeline: [], addedAt: getCurrentTimestamp(), assignedTo: '', priority: priority, waitingMaterials: false
+            });
+            saveAdhocPlanToLocalStorage();
+            renderAdhocPlan();
+            document.getElementById('manualAdhocModal')?.remove();
+        }
+
         function addToAdhocPlan(rowIdx, description, sourceNote) {
             if (currentFileIdx === -1) return;
             const file = loadedFiles[currentFileIdx];
@@ -1451,7 +1509,77 @@
             }
         }
 
+        let maintPlanCalendarFilterDate = null; // Ngày đang lọc khi bấm chọn 1 ô trên lịch tháng (null = xem tất cả)
+        let maintPlanCalendarMonth = new Date().getMonth(); // 0-11
+        let maintPlanCalendarYear = new Date().getFullYear();
+
+        function maintPlanCalendarNav(delta) {
+            maintPlanCalendarMonth += delta;
+            if (maintPlanCalendarMonth > 11) { maintPlanCalendarMonth = 0; maintPlanCalendarYear++; }
+            if (maintPlanCalendarMonth < 0) { maintPlanCalendarMonth = 11; maintPlanCalendarYear--; }
+            renderMaintPlanCalendar();
+        }
+
+        function maintPlanCalendarSelectDay(dateStr) {
+            maintPlanCalendarFilterDate = (maintPlanCalendarFilterDate === dateStr) ? null : dateStr;
+            renderMaintPlan();
+        }
+
+        // Lịch xem theo tháng cho Kế hoạch bảo trì định kỳ — mỗi ô ngày hiện số công việc đã lên lịch,
+        // bấm vào 1 ngày để lọc nhanh danh sách bên dưới chỉ hiện đúng công việc ngày đó.
+        function renderMaintPlanCalendar() {
+            const wrap = document.getElementById('maintPlanCalendarSection');
+            if (!wrap) return;
+
+            const monthNames = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+            const firstDay = new Date(maintPlanCalendarYear, maintPlanCalendarMonth, 1);
+            const daysInMonth = new Date(maintPlanCalendarYear, maintPlanCalendarMonth + 1, 0).getDate();
+            let startWeekday = firstDay.getDay() - 1; // Thứ 2 = cột đầu tiên
+            if (startWeekday < 0) startWeekday = 6;
+
+            const countByDate = {};
+            maintPlan.forEach(p => {
+                if (p.scheduledDate) countByDate[p.scheduledDate] = (countByDate[p.scheduledDate] || 0) + 1;
+            });
+
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            let cellsHtml = '';
+            for (let i = 0; i < startWeekday; i++) cellsHtml += `<div class="maintcal-cell maintcal-empty"></div>`;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${maintPlanCalendarYear}-${String(maintPlanCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const count = countByDate[dateStr] || 0;
+                const isToday = dateStr === todayStr;
+                const isSelected = dateStr === maintPlanCalendarFilterDate;
+                cellsHtml += `
+                    <div class="maintcal-cell ${isToday ? 'maintcal-today' : ''} ${isSelected ? 'maintcal-selected' : ''} ${count > 0 ? 'maintcal-hasjob' : ''}"
+                         onclick="maintPlanCalendarSelectDay('${dateStr}')" title="${count} công việc đã lên lịch">
+                        <span class="maintcal-daynum">${day}</span>
+                        ${count > 0 ? `<span class="maintcal-badge">${count}</span>` : ''}
+                    </div>
+                `;
+            }
+
+            wrap.innerHTML = `
+                <div class="maintcal-header">
+                    <button class="btn btn-slate maintcal-nav-btn" onclick="maintPlanCalendarNav(-1)">&#8592;</button>
+                    <span class="maintcal-monthlabel">${monthNames[maintPlanCalendarMonth]} ${maintPlanCalendarYear}</span>
+                    <button class="btn btn-slate maintcal-nav-btn" onclick="maintPlanCalendarNav(1)">&#8594;</button>
+                    ${maintPlanCalendarFilterDate ? `<button class="btn btn-rose" style="padding:3px 10px; font-size:0.7rem; margin-left:auto;" onclick="maintPlanCalendarFilterDate=null; renderMaintPlan();">✖ Bỏ lọc ngày</button>` : ''}
+                </div>
+                <div class="maintcal-grid">
+                    <div class="maintcal-weekday">T2</div><div class="maintcal-weekday">T3</div><div class="maintcal-weekday">T4</div>
+                    <div class="maintcal-weekday">T5</div><div class="maintcal-weekday">T6</div><div class="maintcal-weekday">T7</div>
+                    <div class="maintcal-weekday">CN</div>
+                    ${cellsHtml}
+                </div>
+            `;
+        }
+
         function renderMaintPlan() {
+            renderMaintPlanCalendar();
+
             if (maintPlan.length === 0) {
                 planContainer.innerHTML = `
                     <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 50px;">
@@ -1464,10 +1592,26 @@
                 return;
             }
 
+            const visiblePlan = maintPlanCalendarFilterDate
+                ? maintPlan.filter(p => p.scheduledDate === maintPlanCalendarFilterDate)
+                : maintPlan;
+
+            if (visiblePlan.length === 0) {
+                const [y, m, d] = maintPlanCalendarFilterDate.split('-');
+                planContainer.innerHTML = `
+                    <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 50px;">
+                        Không có công việc nào lên lịch ngày ${d}/${m}/${y}.<br>
+                        <button class="btn btn-slate" style="margin-top:10px; padding:5px 12px; font-size:0.75rem;" onclick="maintPlanCalendarFilterDate=null; renderMaintPlan();">✖ Bỏ lọc, xem tất cả</button>
+                    </div>
+                `;
+                updatePlanActionButtons();
+                return;
+            }
+
             updatePlanActionButtons();
             let planHtml = '';
 
-            maintPlan.forEach(p => {
+            visiblePlan.forEach(p => {
                 let badgeClass = 'badge-day';
                 if (p.cycleType === 'month') badgeClass = 'badge-month';
                 if (p.cycleType === 'year') badgeClass = 'badge-year';
