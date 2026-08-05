@@ -236,6 +236,7 @@
                         <div class="subtab-bar">
                             <button id="subtabBtnCyclic" class="subtab-btn active tab-cyclic" onclick="switchPlanSubtab('cyclic')">♻️ Theo chu kỳ</button>
                             <button id="subtabBtnAdhoc" class="subtab-btn tab-adhoc" onclick="switchPlanSubtab('adhoc')">🔧 Bảo trì đột xuất</button>
+                            <button id="subtabBtnCalendar" class="subtab-btn tab-cyclic" onclick="switchPlanSubtab('calendar')">📅 Lịch bảo trì</button>
                         </div>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <button class="btn btn-sky" style="padding:4px 10px; font-size:0.75rem;" onclick="bulkCreateWorkOrdersFromPlan()" title="Tạo lệnh công việc cho toàn bộ danh sách đang xem">📤 Xuất tất cả → Lệnh CV</button>
@@ -244,13 +245,16 @@
                     </div>
 
                     <div id="planSubtabCyclic">
-                        <div id="maintPlanCalendarSection"></div>
                         <div class="plan-container" id="planContainer">
                             <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 50px;">
                                 Chưa có thiết bị nào trong hàng chờ bảo dưỡng.<br>
                                 Hãy chọn các chu kỳ bảo trì từ Sơ đồ cây bên trái để đưa vào kế hoạch!
                             </div>
                         </div>
+                    </div>
+
+                    <div id="planSubtabCalendar" class="hidden">
+                        <div id="maintPlanCalendarSection"></div>
                     </div>
 
                     <div id="planSubtabAdhoc" class="hidden">

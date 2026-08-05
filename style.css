@@ -1642,8 +1642,9 @@
 
         /* ===== LỊCH THÁNG — KẾ HOẠCH BẢO TRÌ ĐỊNH KỲ ===== */
         #maintPlanCalendarSection {
-            margin: 10px 15px 12px 15px;
-            padding: 10px 12px;
+            max-width: 420px;
+            margin: 14px auto;
+            padding: 12px 14px;
             background-color: var(--bg-panel-dark);
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -1651,33 +1652,34 @@
         .maintcal-header {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 8px;
         }
-        .maintcal-nav-btn { padding: 3px 10px; font-size: 0.78rem; }
-        .maintcal-monthlabel { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+        .maintcal-nav-btn { padding: 2px 8px; font-size: 0.72rem; }
+        .maintcal-monthlabel { font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
         .maintcal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
+            gap: 3px;
         }
         .maintcal-weekday {
             text-align: center;
-            font-size: 0.68rem;
+            font-size: 0.62rem;
             font-weight: 600;
             color: var(--text-muted);
-            padding-bottom: 4px;
+            padding-bottom: 3px;
         }
         .maintcal-cell {
             position: relative;
             aspect-ratio: 1 / 1;
+            max-height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
+            border-radius: 5px;
             border: 1px solid transparent;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
             transition: all 0.12s ease;
         }
@@ -1689,15 +1691,15 @@
         .maintcal-cell.maintcal-selected { background: var(--color-sky); color: white; font-weight: 700; }
         .maintcal-badge {
             position: absolute;
-            bottom: 2px;
-            right: 3px;
-            font-size: 0.6rem;
+            bottom: 1px;
+            right: 2px;
+            font-size: 0.55rem;
             font-weight: 800;
             background: var(--color-rose);
             color: white;
-            border-radius: 8px;
-            min-width: 13px;
-            height: 13px;
+            border-radius: 7px;
+            min-width: 11px;
+            height: 11px;
             display: flex;
             align-items: center;
             justify-content: center;

@@ -230,8 +230,11 @@
             currentPlanSubtab = tab;
             document.getElementById('subtabBtnCyclic').classList.toggle('active', tab === 'cyclic');
             document.getElementById('subtabBtnAdhoc').classList.toggle('active', tab === 'adhoc');
+            document.getElementById('subtabBtnCalendar').classList.toggle('active', tab === 'calendar');
             document.getElementById('planSubtabCyclic').classList.toggle('hidden', tab !== 'cyclic');
             document.getElementById('planSubtabAdhoc').classList.toggle('hidden', tab !== 'adhoc');
+            document.getElementById('planSubtabCalendar').classList.toggle('hidden', tab !== 'calendar');
+            if (tab === 'calendar') renderMaintPlanCalendar();
             updatePlanActionButtons();
         }
 
@@ -248,6 +251,11 @@
         // Nút "In danh sách" / "Hoàn thành tất cả" dùng chung cho cả 2 tab con,
         // trạng thái bật/tắt phụ thuộc vào danh sách của tab con đang được chọn
         function updatePlanActionButtons() {
+            if (currentPlanSubtab === 'calendar') {
+                btnCompleteAll.setAttribute('disabled', 'true');
+                btnPrintPlan.setAttribute('disabled', 'true');
+                return;
+            }
             const count = currentPlanSubtab === 'adhoc' ? adhocPlan.length : maintPlan.length;
             if (count === 0) {
                 btnCompleteAll.setAttribute('disabled', 'true');
@@ -1522,6 +1530,7 @@
 
         function maintPlanCalendarSelectDay(dateStr) {
             maintPlanCalendarFilterDate = (maintPlanCalendarFilterDate === dateStr) ? null : dateStr;
+            switchPlanSubtab('cyclic');
             renderMaintPlan();
         }
 
