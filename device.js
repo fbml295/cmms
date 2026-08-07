@@ -594,7 +594,27 @@
                 `;
             }
 
+            const reliability = calculateDeviceReliability(device.item);
+            const reliabilityHtml = `
+                <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:140px; background:var(--bg-panel-dark); border:1px solid var(--border-color); border-left:3px solid var(--color-sky); border-radius:6px; padding:8px 12px;">
+                        <div style="font-size:0.66rem; color:var(--text-muted); text-transform:uppercase;">MTBF — TB giữa 2 lần hỏng</div>
+                        <div style="font-size:1.1rem; font-weight:600; color:var(--color-sky);">${reliability.mtbfDays !== null ? reliability.mtbfDays.toFixed(1) + ' ngày' : '—'}</div>
+                    </div>
+                    <div style="flex:1; min-width:140px; background:var(--bg-panel-dark); border:1px solid var(--border-color); border-left:3px solid var(--color-amber); border-radius:6px; padding:8px 12px;">
+                        <div style="font-size:0.66rem; color:var(--text-muted); text-transform:uppercase;">MTTR — TB thời gian sửa</div>
+                        <div style="font-size:1.1rem; font-weight:600; color:var(--color-amber);">${reliability.mttrHours !== null ? reliability.mttrHours.toFixed(1) + ' giờ' : '—'}</div>
+                    </div>
+                    <div style="flex:1; min-width:140px; background:var(--bg-panel-dark); border:1px solid var(--border-color); border-left:3px solid var(--color-rose); border-radius:6px; padding:8px 12px;">
+                        <div style="font-size:0.66rem; color:var(--text-muted); text-transform:uppercase;">Số lần "Không đạt"</div>
+                        <div style="font-size:1.1rem; font-weight:600; color:var(--color-rose);">${reliability.failureCount}</div>
+                    </div>
+                </div>
+                ${reliability.failureCount < 2 ? `<div style="font-size:0.7rem; color:var(--text-muted); margin:-6px 0 12px;">* Cần ít nhất 2 lần "Không đạt" mới tính được MTBF.</div>` : ''}
+            `;
+
             return `
+                ${reliabilityHtml}
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                     <span style="font-size:0.78rem; color:var(--text-muted);">${entries.length}${isFiltered ? ` / ${totalCount}` : ''} lần ghi nhận${isFiltered ? ' (đã lọc)' : ''} — mới nhất hiển thị trên cùng</span>
                     <div style="display:flex; gap:8px;">

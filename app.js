@@ -574,6 +574,70 @@
             _pendingDeleteConfirmCallback = null;
         }
 
+        // ---------------------------------------------------------------
+        // ĐO HIỆU SUẤT & ĐỘ TIN CẬY: MTBF (thời gian trung bình giữa các lần hỏng)
+        // và MTTR (thời gian trung bình để sửa xong), tính từ nhật ký bảo trì đã ghi nhận.
+        // ---------------------------------------------------------------
+
+        // Nhật ký được ghi từ nhiều luồng khác nhau (định kỳ/đột xuất/Việc ngày) nên định dạng ngày giờ
+        // hơi khác nhau — hàm này thử nhiều cách đọc để đảm bảo tính đúng khoảng cách thời gian.
+        function parseLogDateTime(str) {
+            if (!str) return null;
+            let m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/);
+            if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+            m = String(str).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s*(\d{1,2}):(\d{2})(:(\d{2}))?/);
+            if (m) return new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +(m[7] || 0));
+            const d = new Date(str);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        // Tính MTBF (ngày)/MTTR (giờ) cho 1 thiết bị cụ thể, dựa trên các lần ghi nhận kết quả "Không đạt"
+        function calculateDeviceReliability(itemCode) {
+            const logs = (deviceLogs[itemCode] || []);
+            const failures = logs
+                .filter(e => e.result === 'fail')
+                .map(e => ({ ...e, _date: parseLogDateTime(e.performedAt) }))
+                .filter(e => e._date)
+                .sort((a, b) => a._date - b._date);
+
+            let mtbfDays = null;
+            if (failures.length >= 2) {
+                const totalMs = failures[failures.length - 1]._date - failures[0]._date;
+                mtbfDays = (totalMs / (1000 * 60 * 60 * 24)) / (failures.length - 1);
+            }
+
+            let mttrHours = null;
+            const withDowntime = failures.filter(e => e.downtimeMinutes && !isNaN(parseFloat(e.downtimeMinutes)));
+            if (withDowntime.length > 0) {
+                const totalMinutes = withDowntime.reduce((sum, e) => sum + parseFloat(e.downtimeMinutes), 0);
+                mttrHours = (totalMinutes / withDowntime.length) / 60;
+            }
+
+            return { failureCount: failures.length, mtbfDays, mttrHours };
+        }
+
+        // Tổng hợp MTBF/MTTR toàn nhà máy (trung bình theo từng thiết bị có đủ dữ liệu) + xếp hạng độ tin cậy
+        function calculateFactoryReliability() {
+            const perDevice = [];
+            Object.keys(deviceLogs).forEach(itemCode => {
+                const stats = calculateDeviceReliability(itemCode);
+                if (stats.failureCount > 0) {
+                    const deviceInfo = allValidRows.find(d => d.item === itemCode);
+                    perDevice.push({ item: itemCode, name: deviceInfo ? deviceInfo.name : '', ...stats });
+                }
+            });
+
+            const withMtbf = perDevice.filter(d => d.mtbfDays !== null);
+            const withMttr = perDevice.filter(d => d.mttrHours !== null);
+
+            const avgMtbf = withMtbf.length > 0 ? withMtbf.reduce((s, d) => s + d.mtbfDays, 0) / withMtbf.length : null;
+            const avgMttr = withMttr.length > 0 ? withMttr.reduce((s, d) => s + d.mttrHours, 0) / withMttr.length : null;
+
+            const worstReliability = withMtbf.slice().sort((a, b) => a.mtbfDays - b.mtbfDays).slice(0, 10);
+
+            return { avgMtbf, avgMttr, deviceCount: withMtbf.length, worstReliability };
+        }
+
         function rcaEsc(v) {
             return String(v === undefined || v === null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         }

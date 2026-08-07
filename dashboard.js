@@ -369,6 +369,41 @@
                 <div class="dashboard-split-panel">
                     ${dueSoonListHtml}
                 </div>
+
+                <div class="dashboard-section-title">📉 Độ tin cậy thiết bị — MTBF / MTTR</div>
+                ${(() => {
+                    const rel = calculateFactoryReliability();
+                    if (rel.deviceCount === 0) {
+                        return `<div class="italic" style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0;">Chưa đủ dữ liệu (cần ít nhất 2 lần "Không đạt" trên cùng 1 thiết bị để tính MTBF).</div>`;
+                    }
+                    const worstRowsHtml = rel.worstReliability.map(d => `
+                        <div class="overdue-item">
+                            <div class="overdue-item-name">
+                                <strong>${d.item}${d.name ? ' — ' + d.name : ''}</strong>
+                                <span>${d.failureCount} lần "Không đạt"${d.mttrHours !== null ? ' • MTTR ' + d.mttrHours.toFixed(1) + ' giờ' : ''}</span>
+                            </div>
+                            <span class="overdue-item-badge" style="background: rgba(239,68,68,0.15); color: var(--color-rose); border-color: rgba(239,68,68,0.35);">MTBF ${d.mtbfDays.toFixed(1)} ngày</span>
+                        </div>
+                    `).join('');
+                    return `
+                        <div class="dashboard-grid" style="margin-bottom:14px;">
+                            <div class="stat-card c-sky">
+                                <div class="stat-icon">📆</div>
+                                <div class="stat-label">MTBF trung bình nhà máy</div>
+                                <div class="stat-value">${rel.avgMtbf !== null ? rel.avgMtbf.toFixed(1) : '—'}</div>
+                                <div class="stat-sub">ngày / lần hỏng — tính trên ${rel.deviceCount} thiết bị có dữ liệu</div>
+                            </div>
+                            <div class="stat-card c-amber">
+                                <div class="stat-icon">🛠️</div>
+                                <div class="stat-label">MTTR trung bình nhà máy</div>
+                                <div class="stat-value">${rel.avgMttr !== null ? rel.avgMttr.toFixed(1) : '—'}</div>
+                                <div class="stat-sub">giờ / lần sửa chữa</div>
+                            </div>
+                        </div>
+                        <div class="dashboard-split-subtitle">⚠️ 10 thiết bị có độ tin cậy thấp nhất (MTBF ngắn nhất)</div>
+                        <div class="overdue-list">${worstRowsHtml}</div>
+                    `;
+                })()}
             `;
         }
 
