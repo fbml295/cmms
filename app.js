@@ -44,6 +44,7 @@
         let driveRcaFolderId = '';
         let driveWorkOrdersFolderId = '';
         let driveFmeaFolderId = '';
+        let driveMasterPlanFolderId = '';
         let geminiApiKey = '';
         // Danh sách model Gemini 3.x để tự động dò — model nào gọi API thành công trước sẽ được dùng.
         // Cập nhật danh sách này khi Google phát hành model mới hoặc ngừng hỗ trợ model cũ.
@@ -117,7 +118,7 @@
             closeMobileNav();
             closeSidebar();
             currentMainTab = tab;
-            ['welcome','dashboard','device','personnel','plan','rca','fmea','workorder','config'].forEach(t => {
+            ['welcome','dashboard','device','personnel','plan','masterplan','rca','fmea','workorder','config'].forEach(t => {
                 const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
                 if (el) el.classList.toggle('active', t === tab);
             });
@@ -127,6 +128,7 @@
             document.getElementById('navBtnPlan').classList.toggle('active', tab === 'plan');
             document.getElementById('navBtnRCA').classList.toggle('active', tab === 'rca');
             document.getElementById('navBtnFmea')?.classList.toggle('active', tab === 'fmea');
+            document.getElementById('navBtnMasterplan')?.classList.toggle('active', tab === 'masterplan');
             document.getElementById('navBtnWorkOrder').classList.toggle('active', tab === 'workorder');
             document.getElementById('navBtnConfig')?.classList.toggle('active', tab === 'config');
             if (tab === 'dashboard') renderDashboard();
@@ -134,6 +136,7 @@
             if (tab === 'plan') { renderMaintPlan(); renderAdhocPlan(); renderAdhocTimelineSection(); }
             if (tab === 'rca') { closeRcaEditor(); renderRcaList(); }
             if (tab === 'fmea') { closeFmeaEditor(); renderFmeaList(); }
+            if (tab === 'masterplan') { closeMasterCampaignDetail(); renderMasterPlanPage(); }   
             if (tab === 'workorder') { initWorkOrderTab(); }
             if (tab === 'config') renderCfgCompanyInfoPreview();
         }
@@ -169,6 +172,7 @@
             loadAdhocCampaignHistory();
             loadRcaRecordsFromStorage();
             loadFmeaRecordsFromStorage();
+            loadMasterCampaignsFromStorage();     
             renderAdhocTimelineSection();
             try {
                 const savedProject = await getProjectDirHandleFromDB();
