@@ -47,6 +47,10 @@
             <span class="icon-nav-emoji">📋</span>
             <span class="icon-nav-label">Kế hoạch</span>
         </button>
+        <button class="icon-nav-btn" id="navBtnMasterplan" onclick="switchMainTab('masterplan')" title="Master Plan">
+    <span class="icon-nav-emoji">🗓️</span>
+    <span class="icon-nav-label">Đợt lớn</span>
+        </button>
         <button class="icon-nav-btn" id="navBtnWorkOrder" onclick="switchMainTab('workorder')" title="Công việc hàng ngày">
             <span class="icon-nav-emoji"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="12" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="18" x2="16" y2="18"></line></svg></span>
             <span class="icon-nav-label">Việc ngày</span>
@@ -296,7 +300,24 @@
                 </section>
             </div>
         </div>
-
+<!-- ================= TAB: KẾ HOẠCH BẢO TRÌ LỚN THEO ĐỢT ================= -->
+<div id="tabMasterplan" class="tab-page">
+    <div class="rca-page">
+        <div id="masterplanListView">
+            <div class="rca-toolbar">
+                <span class="rca-toolbar-title">🗓️ Kế hoạch bảo trì lớn theo đợt</span>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <label style="font-size:0.78rem; color:var(--text-muted);">Năm:</label>
+                    <select id="mpYearSelect" class="filter-select" style="width:auto;" onchange="mpChangeYearFilter(this.value)"></select>
+                    <button class="btn btn-violet" style="padding: 6px 12px; font-size: 0.78rem;" onclick="openMasterCampaignEditModal(null)">➕ Thêm đợt bảo trì lớn</button>
+                </div>
+            </div>
+            <div class="dashboard-grid" id="mpYearSummary" style="margin-bottom:18px;"></div>
+            <div id="masterplanListContainer"></div>
+        </div>
+        <div id="masterplanDetailView" class="hidden"></div>
+    </div>
+</div>
         <!-- ================= TAB: RCA (PHÂN TÍCH NGUYÊN NHÂN GỐC RỄ) ================= -->
         <div id="tabRca" class="tab-page">
             <div class="rca-page">
@@ -539,6 +560,7 @@
     <script src="personnel.js"></script>
     <script src="device.js"></script>
     <script src="plan.js"></script>
+    <script src="masterplan.js"></script>
     <script src="dashboard.js"></script>
     <script src="rca.js"></script>
     <script src="fmea.js"></script>
