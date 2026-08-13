@@ -349,6 +349,7 @@
             driveRcaFolderId = '';
             driveWorkOrdersFolderId = '';
             driveFmeaFolderId = '';
+            driveMasterPlanFolderId = '';    
 
             const loginStatusEl = document.getElementById('driveLoginStatus');
             if (loginStatusEl) loginStatusEl.textContent = '⚪ Chưa đăng nhập Google.';
@@ -402,10 +403,12 @@
                 rcaRecords = {}; localStorage.setItem('rcaRecords', JSON.stringify(rcaRecords));
                 workOrders = {}; localStorage.setItem('workOrders', JSON.stringify(workOrders));
                 fmeaRecords = {}; localStorage.setItem('fmeaRecords', JSON.stringify(fmeaRecords));
+                masterCampaigns = []; localStorage.setItem('masterCampaigns', JSON.stringify(masterCampaigns));
                 personnelList = []; localStorage.setItem('personnelList', JSON.stringify(personnelList));
                 saveCompanyInfo({ company: '', department: '', lineName: '' });
                 renderMaintPlan(); renderAdhocPlan(); renderRcaList(); renderFmeaList();
                 renderWorkOrderPage(); renderPersonnelPage(); updateMainHeaderTitle();
+                if (typeof renderMasterPlanPage === 'function') renderMasterPlanPage();   
 
                 // 1. Thư mục con "data" — file Excel dữ liệu (chấp nhận cả .xlsx/.xls thật lẫn Google Sheets gốc)
                 driveDataFolderId = await driveFindOrCreateFolder(driveFolderId, 'data');
@@ -458,9 +461,10 @@
                 driveRcaFolderId = await driveFindOrCreateFolder(driveFolderId, 'rca');
                 driveWorkOrdersFolderId = await driveFindOrCreateFolder(driveFolderId, 'workorders');
                 driveFmeaFolderId = await driveFindOrCreateFolder(driveFolderId, 'fmea');
+                driveMasterPlanFolderId = await driveFindOrCreateFolder(driveFolderId, 'masterplan');    
 
                 // Ưu tiên nạp dữ liệu đã có trên Drive (nếu có) để đồng bộ giữa các máy
-                const [dMaintPlan, dAdhocPlan, dAdhocCampaign, dAdhocCampaignHistory, dCompanyInfo, dRca, dWorkOrders, dFmea] = await Promise.all([
+                const [dMaintPlan, dAdhocPlan, dAdhocCampaign, dAdhocCampaignHistory, dCompanyInfo, dRca, dWorkOrders, dFmea, dMasterCampaigns] = await Promise.all([
                     driveLoadJsonFile(driveMaintPlanFolderId, 'maintPlan.json'),
                     driveLoadJsonFile(driveAdhocPlanFolderId, 'adhocPlan.json'),
                     driveLoadJsonFile(driveAdhocCampaignFolderId, 'adhocCampaign.json'),
@@ -469,6 +473,7 @@
                     driveLoadJsonFile(driveRcaFolderId, 'rcaRecords.json'),
                     driveLoadJsonFile(driveWorkOrdersFolderId, 'workOrders.json'),
                     driveLoadJsonFile(driveFmeaFolderId, 'fmeaRecords.json')
+                    driveLoadJsonFile(driveMasterPlanFolderId, 'masterCampaigns.json'),   
                 ]);
                 if (dMaintPlan) { maintPlan = dMaintPlan; localStorage.setItem('maintPlan', JSON.stringify(maintPlan)); renderMaintPlan(); }
                 if (dAdhocPlan) { adhocPlan = dAdhocPlan; localStorage.setItem('adhocPlan', JSON.stringify(adhocPlan)); renderAdhocPlan(); }
@@ -485,6 +490,7 @@
                 if (dRca) { rcaRecords = dRca; localStorage.setItem('rcaRecords', JSON.stringify(rcaRecords)); renderRcaList(); }
                 if (dWorkOrders) { workOrders = dWorkOrders; localStorage.setItem('workOrders', JSON.stringify(workOrders)); renderWorkOrderPage(); }
                 if (dFmea) { fmeaRecords = dFmea; localStorage.setItem('fmeaRecords', JSON.stringify(fmeaRecords)); renderFmeaList(); }
+                if (dMasterCampaigns) { masterCampaigns = dMasterCampaigns; localStorage.setItem('masterCampaigns', JSON.stringify(masterCampaigns)); }    
 
                 appMode = 'drive';
                 driveActiveFolderId = driveFolderId;
