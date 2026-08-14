@@ -472,8 +472,7 @@
                     driveLoadJsonFile(driveCompanyInfoFolderId, 'companyInfo.json'),
                     driveLoadJsonFile(driveRcaFolderId, 'rcaRecords.json'),
                     driveLoadJsonFile(driveWorkOrdersFolderId, 'workOrders.json'),
-                    driveLoadJsonFile(driveFmeaFolderId, 'fmeaRecords.json'),
-                    driveLoadJsonFile(driveMasterPlanFolderId, 'masterCampaigns.json'),   
+                    driveLoadJsonFile(driveFmeaFolderId, 'fmeaRecords.json'),driveLoadJsonFile(driveMasterPlanFolderId, 'masterCampaigns.json'),   
                 ]);
                 if (dMaintPlan) { maintPlan = dMaintPlan; localStorage.setItem('maintPlan', JSON.stringify(maintPlan)); renderMaintPlan(); }
                 if (dAdhocPlan) { adhocPlan = dAdhocPlan; localStorage.setItem('adhocPlan', JSON.stringify(adhocPlan)); renderAdhocPlan(); }
