@@ -2104,10 +2104,25 @@
         .p-20 { padding: 20px; }
 
         /* ===== TRANG CẤU HÌNH (Google Drive / Gemini AI) ===== */
-        .config-page { width: 100%; max-width: 100%; margin: 0; padding: 18px 20px 40px; box-sizing: border-box; }
-        .config-page-title, .config-page-sub, .config-section { max-width: 780px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-        .config-page-title { font-size: 1.15rem; color: white; margin-bottom: 3px; }
-        .config-page-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; }
+        .config-page { width: 100%; max-width: 1180px; margin: 0 auto; padding: 18px 20px 40px; box-sizing: border-box; }
+        .config-page-title, .config-page-sub { box-sizing: border-box; }
+
+        /* Lưới 2x2: Trái trên = Google Drive, Phải trên = Gemini AI, Trái dưới = Thông tin đơn vị, Phải dưới = Offline */
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        .config-grid .config-section {
+            margin-bottom: 0;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        @media (max-width: 860px) {
+            .config-grid { grid-template-columns: 1fr; }
+        }
+
         .config-section { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
         .config-section-title { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.2px; color: white; margin-bottom: 8px; }
         .config-hint { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
@@ -2248,6 +2263,8 @@
                 width: 100%; max-width: 100%; box-sizing: border-box;
             }
 
+            .config-grid { gap: 12px; }
+
             /* Dashboard: thu gọn thẻ số liệu, chỉ vừa đủ xem, đỡ chiếm màn hình */
             .dashboard-page { padding: 12px; }
             .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
@@ -2298,4 +2315,3 @@
             .rca-actions-table thead, .rca-actions-table tbody,
             .personnel-table thead, .personnel-table tbody { display: table; width: 100%; }
         }
-
