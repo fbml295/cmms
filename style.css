@@ -2279,6 +2279,33 @@
             .panel-resizer { display: none; }
             .plan-section { flex: none; }
 
+            /* --- THẺ THIẾT BỊ (device-card): 3 ngăn ngang (Thông tin | Kế hoạch | Lịch sử) đang cố định
+               chiều rộng theo tỉ lệ (flex: 4.2/3.4/2.4) → trên màn hình hẹp bị ép quá chật khiến chữ tràn/
+               chồng lên nhau. Trên mobile: xếp 3 ngăn CHỒNG DỌC, mỗi ngăn full chiều rộng để đọc thoải mái. */
+            .device-card { flex-direction: column; }
+            .comp-section {
+                flex: none !important;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .comp-section:last-child { border-bottom: none; }
+            .comp-left { background-color: transparent; }
+            .align-row { height: auto; min-height: 28px; flex-wrap: wrap; row-gap: 4px; }
+            .plan-rows-container { gap: 10px; }
+
+            /* --- POPUP "SỬA / THÊM THIẾT BỊ" (device.js): các dòng nhập liệu đang ghi flex-row
+               trực tiếp bằng inline style (không qua class), nên media query bình thường không chạm tới
+               được. Quy tắc dưới đây "vô hiệu hoá" flex ngang của riêng các dòng đó trên mobile, buộc từng
+               ô nhập liệu (vốn đã là div khối) tự xếp dọc — không cần sửa lại device.js. */
+            .modal-content form > div[style*="flex"] {
+                display: block !important;
+            }
+            .modal-content form > div[style*="flex"] > div {
+                margin-bottom: 10px;
+            }
+            .modal-content { width: 94vw !important; max-width: 94vw !important; }
+
             /* Chống nội dung bị cắt mất khi rộng hơn màn hình: mọi khối chính co giãn vừa khung, không bị lố ngang */
             .dashboard-page, .config-page, .wo-page, .personnel-page,
             .tree-section, .plan-section, .rca-page {

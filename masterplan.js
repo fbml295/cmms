@@ -286,7 +286,7 @@
                                     </div>
                                 </div>
                                 <input type="text" class="search-input" value="${rcaEsc(item.title)}" placeholder="Tên hạng mục công việc lớn..." style="font-weight:700;" onchange="updateMasterCampaignItemField('${item.id}','title',this.value)">
-                                <div class="wo-form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                <div class="wo-form-row">
                                     <select class="search-input" onchange="updateMasterCampaignItemField('${item.id}','device',this.value, this)">
                                         ${typeof buildWoDeviceOptions === 'function' ? buildWoDeviceOptions(item.device || '') : `<option value="">— Không gắn thiết bị —</option>`}
                                     </select>
