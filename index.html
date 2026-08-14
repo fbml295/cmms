@@ -457,24 +457,28 @@
                 <div class="config-section">
                     <div class="config-section-title">☁️ Dự án Google Drive</div>
 
-                    <div class="config-form-row">
-                        <div class="config-form-field">
-                            <label>Chọn dự án / thư mục Google Drive</label>
-                            <select id="cfg_driveFolderSelect" class="search-input" onchange="onDriveFolderSelectChange()"></select>
+                    <div class="config-drive-split">
+                        <div class="config-drive-col">
+                            <div class="config-form-row" style="grid-template-columns: 1fr; margin-bottom: 10px;">
+                                <div class="config-form-field">
+                                    <label>Chọn dự án / thư mục Google Drive</label>
+                                    <select id="cfg_driveFolderSelect" class="search-input" onchange="onDriveFolderSelectChange()"></select>
+                                </div>
+                            </div>
+                            <div class="config-actions-row">
+                                <button class="btn btn-sky" onclick="activateGoogleDriveProject()">🚀 Kích hoạt thư mục dự án</button>
+                                <span id="cfg_driveFolderStatus" class="log-dir-status" style="display:inline-block;">⚪ Chưa kích hoạt</span>
+                            </div>
+                            <div id="driveConnectStatus" class="log-dir-status"></div>
                         </div>
-                    </div>
-                    <div class="config-actions-row">
-                        <button class="btn btn-sky" onclick="activateGoogleDriveProject()">🚀 Kích hoạt thư mục dự án</button>
-                        <span id="cfg_driveFolderStatus" class="log-dir-status" style="display:inline-block;">⚪ Chưa kích hoạt</span>
-                    </div>
-                    <div id="driveConnectStatus" class="log-dir-status"></div>
 
-                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 14px 0;">
-
-                    <div class="config-section-title" id="fileListSectionTitle" style="font-size:0.85rem;">📄 Tệp dữ liệu đang mở</div>
-                    <div id="fileListContainer" class="file-list">
-                        <div class="italic text-center" style="color: var(--text-muted); font-size: 0.8rem; padding: 15px 0;">
-                            Chưa có tệp nào — kích hoạt dự án ở trên để nạp dữ liệu.
+                        <div class="config-drive-col">
+                            <div class="config-section-title" id="fileListSectionTitle" style="font-size:0.85rem;">📄 Tệp dữ liệu đang mở</div>
+                            <div id="fileListContainer" class="file-list">
+                                <div class="italic text-center" style="color: var(--text-muted); font-size: 0.8rem; padding: 15px 0;">
+                                    Chưa có tệp nào — kích hoạt dự án ở trên để nạp dữ liệu.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
