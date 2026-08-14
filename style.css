@@ -1405,7 +1405,7 @@
         .wo-stat-pill.p-rate .wo-stat-val { color: var(--color-violet); }
         .wo-kanban-wrap { display: flex; flex: 1; overflow: hidden; min-height: 0; }
         .wo-kanban { display: flex; gap: 12px; flex: 1; overflow-x: auto; padding: 14px; align-items: stretch; min-width: 0; }
-        .wo-col { display: flex; flex-direction: column; min-width: 260px; max-width: 420px; flex: 1; background: var(--bg-panel-dark); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; min-height: 0; }
+        .wo-col { display: flex; flex-direction: column; min-width: 260px; flex: 1; background: var(--bg-panel-dark); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; min-height: 0; }
         .wo-col-header { padding: 10px 14px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.3px; flex-shrink: 0; }
         .wo-col-header.wo-col-pending { background: rgba(245,158,11,0.12); color: var(--color-amber); border-bottom: 2px solid var(--color-amber); }
         .wo-col-header.wo-col-inprogress { background: rgba(14,165,233,0.12); color: var(--color-sky); border-bottom: 2px solid var(--color-sky); }
