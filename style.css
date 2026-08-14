@@ -1388,7 +1388,7 @@
 
         /* --- RCA: PHÂN TÍCH NGUYÊN NHÂN GỐC RỄ --- */
         /* ===== CÔNG VIỆC HÀNG NGÀY (WORK ORDER) ===== */
-        .wo-page { display: flex; flex-direction: column; height: 100%; background: var(--bg-main); overflow: hidden; }
+        .wo-page { display: flex; flex-direction: column; width: 100%; height: 100%; flex: 1 1 auto; min-width: 0; box-sizing: border-box; background: var(--bg-main); overflow: hidden; }
         .wo-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); flex-shrink: 0; flex-wrap: wrap; }
         .wo-toolbar-left { display: flex; align-items: center; gap: 8px; }
         .wo-toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
