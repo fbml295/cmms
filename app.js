@@ -113,10 +113,21 @@
             document.getElementById('mobileNavBackdrop')?.classList.remove('show');
         }
 
+        // --- KẾ HOẠCH MINI (tab Thiết bị) TRÊN MOBILE: mặc định thu gọn còn 1 dòng tiêu đề,
+        // bấm vào để mở dạng lớp phủ (overlay) đè lên Sơ đồ cây thay vì đẩy nội dung xuống.
+        // Trên desktop, class này không có hiệu lực hiển thị nào (CSS chỉ áp dụng trong media query mobile).
+        function toggleMiniPlanMobile() {
+            document.getElementById('planMiniSection')?.classList.toggle('mini-plan-mobile-open');
+        }
+        function closeMiniPlanMobile() {
+            document.getElementById('planMiniSection')?.classList.remove('mini-plan-mobile-open');
+        }
+
         // --- CHUYỂN TAB CHÍNH (WELCOME / DASHBOARD / THIẾT BỊ / NHÂN SỰ) ---
         function switchMainTab(tab) {
             closeMobileNav();
             closeSidebar();
+            closeMiniPlanMobile();
             currentMainTab = tab;
             ['welcome','dashboard','device','personnel','plan','masterplan','rca','fmea','workorder','config'].forEach(t => {
                 const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));

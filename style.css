@@ -2102,6 +2102,7 @@
         .italic { font-style: italic; }
         .text-center { text-align: center; }
         .p-20 { padding: 20px; }
+        .mini-plan-toggle-hint { display: none; } /* Chỉ hiện trên mobile — xem media query bên dưới */
 
         /* ===== TRANG CẤU HÌNH (Google Drive / Gemini AI) ===== */
         .config-page { width: 100%; max-width: 1180px; margin: 0 auto; padding: 18px 20px 40px; box-sizing: border-box; }
@@ -2278,6 +2279,51 @@
             }
             .panel-resizer { display: none; }
             .plan-section { flex: none; }
+
+            /* Các nút Thêm thiết bị / Báo cáo / Lưu dữ liệu: chỉ hiện icon trên mobile để đỡ chật thanh công cụ */
+            .btn-label { display: none; }
+            #btnAddDevice, #btnSummaryReport, #btnSaveFile {
+                padding: 6px 9px !important;
+                min-width: 34px;
+                justify-content: center;
+            }
+
+            /* --- KẾ HOẠCH KIỂM TRA BẢO DƯỠNG (mini, trong tab Thiết bị): mặc định chỉ hiện 1 dòng tiêu đề,
+               bấm vào để mở dạng LỚP PHỦ (overlay) đè lên Sơ đồ cây bên trên, thay vì đẩy nội dung xuống. */
+            #planMiniSection {
+                position: relative;
+                height: auto !important;
+                min-height: 0;
+                flex: none !important;
+                z-index: 30;
+                border-top: 1px solid var(--border-color);
+            }
+            #miniPlanHeaderToggle { cursor: pointer; }
+            .mini-plan-toggle-hint {
+                display: inline-block;
+                margin-left: 6px;
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                transition: transform 0.2s ease;
+            }
+            #miniPlanBody { display: none; }
+            #planMiniSection.mini-plan-mobile-open {
+                position: fixed;
+                left: 0; right: 0;
+                top: 56px; bottom: 0;
+                background: var(--bg-panel);
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            }
+            #planMiniSection.mini-plan-mobile-open #miniPlanBody {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+            }
+            #planMiniSection.mini-plan-mobile-open .mini-plan-toggle-hint { transform: rotate(180deg); }
 
             /* --- THẺ THIẾT BỊ (device-card): 3 ngăn ngang (Thông tin | Kế hoạch | Lịch sử) đang cố định
                chiều rộng theo tỉ lệ (flex: 4.2/3.4/2.4) → trên màn hình hẹp bị ép quá chật khiến chữ tràn/

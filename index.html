@@ -156,9 +156,9 @@
                         <span class="section-title">Sơ đồ hệ thống thiết bị</span>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <span id="deviceCount" style="font-size: 0.8rem; color: var(--text-muted);">0 thiết bị</span>
-                            <button id="btnAddDevice" class="btn btn-emerald" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAddDeviceModal()">➕ Thêm thiết bị</button>
-                            <button id="btnSummaryReport" class="btn btn-sky" style="padding: 4px 10px; font-size: 0.75rem;" title="Báo cáo kết quả bảo trì">📈 Báo cáo</button>
-                            <button id="btnSaveFile" disabled class="btn btn-sky btn-disabled" style="padding: 4px 10px; font-size: 0.75rem;">💾 Lưu dữ liệu</button>
+                            <button id="btnAddDevice" class="btn btn-emerald" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAddDeviceModal()" title="Thêm thiết bị">➕ <span class="btn-label">Thêm thiết bị</span></button>
+                            <button id="btnSummaryReport" class="btn btn-sky" style="padding: 4px 10px; font-size: 0.75rem;" title="Báo cáo kết quả bảo trì">📈 <span class="btn-label">Báo cáo</span></button>
+                            <button id="btnSaveFile" disabled class="btn btn-sky btn-disabled" style="padding: 4px 10px; font-size: 0.75rem;" title="Lưu dữ liệu">💾 <span class="btn-label">Lưu dữ liệu</span></button>
                             <span id="unsavedIndicator" class="hidden" style="font-size:0.7rem; font-weight:700; color:var(--color-amber);">● Chưa sao lưu</span>
                         </div>
                     </div>
@@ -187,30 +187,32 @@
                 <div class="panel-resizer" id="panelResizer" title="Kéo để thay đổi kích thước khung"></div>
 
                 <section class="plan-section" id="planMiniSection">
-                    <div class="section-header">
-                        <span class="section-title" style="color: var(--color-emerald);">Kế hoạch kiểm tra bảo dưỡng</span>
-                        <button class="btn btn-sky" style="padding: 4px 10px; font-size: 0.75rem;" onclick="switchMainTab('plan')" title="Mở tab Kế hoạch để đặt ngày/khung giờ, mức ưu tiên, người thực hiện...">📋 Qua tab Kế hoạch</button>
+                    <div class="section-header" id="miniPlanHeaderToggle" onclick="toggleMiniPlanMobile()">
+                        <span class="section-title" style="color: var(--color-emerald);">Kế hoạch kiểm tra bảo dưỡng <span class="mini-plan-toggle-hint">▲</span></span>
+                        <button class="btn btn-sky" style="padding: 4px 10px; font-size: 0.75rem;" onclick="event.stopPropagation(); switchMainTab('plan')" title="Mở tab Kế hoạch để đặt ngày/khung giờ, mức ưu tiên, người thực hiện...">📋 <span class="btn-label">Qua tab Kế hoạch</span></button>
                     </div>
 
-                    <div style="padding: 10px 15px 0 15px;">
-                        <div class="subtab-bar">
-                            <button id="miniSubtabBtnCyclic" class="subtab-btn active tab-cyclic" onclick="switchMiniPlanSubtab('cyclic')">♻️ Theo chu kỳ</button>
-                            <button id="miniSubtabBtnAdhoc" class="subtab-btn tab-adhoc" onclick="switchMiniPlanSubtab('adhoc')">🔧 Bảo trì đột xuất</button>
+                    <div id="miniPlanBody">
+                        <div style="padding: 10px 15px 0 15px;">
+                            <div class="subtab-bar">
+                                <button id="miniSubtabBtnCyclic" class="subtab-btn active tab-cyclic" onclick="switchMiniPlanSubtab('cyclic')">♻️ Theo chu kỳ</button>
+                                <button id="miniSubtabBtnAdhoc" class="subtab-btn tab-adhoc" onclick="switchMiniPlanSubtab('adhoc')">🔧 Bảo trì đột xuất</button>
+                            </div>
                         </div>
-                    </div>
-                    <div style="padding:0 15px; font-size:0.68rem; color:var(--text-muted); line-height:1.4;">Chọn chu kỳ / bấm "🔧 Đột xuất" trên thiết bị ở Sơ đồ cây để thêm vào danh sách bên dưới. Muốn đặt ngày, khung giờ, mức ưu tiên... hãy qua tab "📋 Kế hoạch".</div>
+                        <div style="padding:0 15px; font-size:0.68rem; color:var(--text-muted); line-height:1.4;">Chọn chu kỳ / bấm "🔧 Đột xuất" trên thiết bị ở Sơ đồ cây để thêm vào danh sách bên dưới. Muốn đặt ngày, khung giờ, mức ưu tiên... hãy qua tab "📋 Kế hoạch".</div>
 
-                    <div id="miniPlanSubtabCyclic" class="mini-plan-container">
-                        <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 30px;">
-                            Chưa có thiết bị nào trong hàng chờ bảo dưỡng.<br>
-                            Hãy chọn các chu kỳ bảo trì từ Sơ đồ cây bên trái để đưa vào kế hoạch!
+                        <div id="miniPlanSubtabCyclic" class="mini-plan-container">
+                            <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 30px;">
+                                Chưa có thiết bị nào trong hàng chờ bảo dưỡng.<br>
+                                Hãy chọn các chu kỳ bảo trì từ Sơ đồ cây bên trái để đưa vào kế hoạch!
+                            </div>
                         </div>
-                    </div>
 
-                    <div id="miniPlanSubtabAdhoc" class="mini-plan-container hidden">
-                        <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 30px;">
-                            Chưa có hạng mục bảo trì đột xuất nào.<br>
-                            Dùng nút "🔧 Đột xuất" trên từng thiết bị trong sơ đồ cây để đưa vào đây.
+                        <div id="miniPlanSubtabAdhoc" class="mini-plan-container hidden">
+                            <div class="italic text-center p-20" style="color: var(--text-muted); margin-top: 30px;">
+                                Chưa có hạng mục bảo trì đột xuất nào.<br>
+                                Dùng nút "🔧 Đột xuất" trên từng thiết bị trong sơ đồ cây để đưa vào đây.
+                            </div>
                         </div>
                     </div>
                 </section>
