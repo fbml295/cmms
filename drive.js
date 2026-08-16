@@ -128,6 +128,20 @@
                             document.getElementById('authStep1')?.classList.add('hidden');
                             document.getElementById('authStep2')?.classList.remove('hidden');
                             populateGateFolderSelect();
+
+                            // Nếu trước đó đã từng kích hoạt thành công 1 dự án trên chính trình duyệt này,
+                            // tự động chọn lại đúng dự án đó và kích hoạt luôn — người dùng chỉ cần bấm
+                            // "Đăng nhập bằng Google" 1 lần duy nhất, không cần chọn lại dự án mỗi lần vào lại.
+                            const rememberedFolderId = localStorage.getItem('driveRememberedFolderId');
+                            if (rememberedFolderId) {
+                                const gateSelect = document.getElementById('authGateFolderSelect');
+                                if (gateSelect && [...gateSelect.options].some(o => o.value === rememberedFolderId)) {
+                                    gateSelect.value = rememberedFolderId;
+                                    const gateStatus = document.getElementById('authGateActivateStatus');
+                                    if (gateStatus) gateStatus.textContent = '⏳ Đang tự động kích hoạt dự án đã dùng lần trước...';
+                                    gateActivateProject();
+                                }
+                            }
                         } else {
                             if (loginStatusEl) loginStatusEl.textContent = '🔴 Đăng nhập thất bại hoặc bị hủy.';
                             const gateStatus = document.getElementById('authGateLoginStatus');
@@ -315,6 +329,7 @@
         // dùng khi cần đổi sang tài khoản Google khác.
         function logoutAndSwitchAccount() {
             if (!confirm('Đăng xuất khỏi tài khoản Google hiện tại và quay về màn hình đăng nhập?')) return;
+            localStorage.removeItem('driveRememberedFolderId');
             try {
                 if (driveAccessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2 && google.accounts.oauth2.revoke) {
                     google.accounts.oauth2.revoke(driveAccessToken, () => location.reload());
@@ -494,6 +509,7 @@
 
                 appMode = 'drive';
                 driveActiveFolderId = driveFolderId;
+                localStorage.setItem('driveRememberedFolderId', driveFolderId);
                 updatePersonnelDirStatusUI(true, `technician (Google Drive — "${rootInfo.name}")`);
                 updateLogDirStatusUI(true, `logdata (Google Drive — "${rootInfo.name}")`);
                 updateHeaderUserStatus();
