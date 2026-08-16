@@ -83,7 +83,7 @@
         <div class="logo-area">
             <div class="logo-box">⚙️</div>
             <div class="logo-text">
-                <h1 id="mainHeaderTitle">HỆ THỐNG QUẢN LÝ BẢO TRÌ CMMS</h1>
+                <h1 id="mainHeaderTitle"><span class="header-title-full">HỆ THỐNG QUẢN LÝ BẢO TRÌ CMMS</span><span class="header-title-short">CMMS</span></h1>
                 <p>Phòng Kỹ thuật Chất lượng - MDF VRG Quảng Trị</p>
             </div>
         </div>
@@ -152,27 +152,32 @@
             <div class="main-content">
                 
                 <section class="tree-section" id="treeSection">
-                    <div class="section-header">
-                        <span class="section-title">Sơ đồ hệ thống thiết bị</span>
-                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <span id="deviceCount" style="font-size: 0.8rem; color: var(--text-muted);">0 thiết bị</span>
-                            <button id="btnAddDevice" class="btn btn-emerald" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAddDeviceModal()" title="Thêm thiết bị">➕ <span class="btn-label">Thêm thiết bị</span></button>
-                            <button id="btnSummaryReport" class="btn btn-sky" style="padding: 4px 10px; font-size: 0.75rem;" title="Báo cáo kết quả bảo trì">📈 <span class="btn-label">Báo cáo</span></button>
-                            <button id="btnSaveFile" disabled class="btn btn-sky btn-disabled" style="padding: 4px 10px; font-size: 0.75rem;" title="Lưu dữ liệu">💾 <span class="btn-label">Lưu dữ liệu</span></button>
+                    <div class="section-header" id="deviceSectionHeader">
+                        <span class="section-title">
+                            <span class="header-title-full">Sơ đồ hệ thống thiết bị</span>
+                            <span class="header-title-short">Sơ đồ thiết bị</span>
+                        </span>
+                        <div class="device-toolbar" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span id="deviceCount" class="device-count-badge">0 thiết bị</span>
+                            <span class="mobile-row-break"></span>
+                            <button id="btnAddDevice" class="btn btn-emerald device-toolbar-btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAddDeviceModal()" title="Thêm thiết bị"><span class="btn-icon">➕</span><span class="btn-label-full">Thêm thiết bị</span><span class="btn-label-short">Thêm</span></button>
+                            <button id="btnSummaryReport" class="btn btn-sky device-toolbar-btn" style="padding: 4px 10px; font-size: 0.75rem;" title="Báo cáo kết quả bảo trì"><span class="btn-icon">📈</span><span class="btn-label-full">Báo cáo</span><span class="btn-label-short">Báo cáo</span></button>
+                            <button id="btnSaveFile" disabled class="btn btn-sky btn-disabled device-toolbar-btn" style="padding: 4px 10px; font-size: 0.75rem;" title="Lưu dữ liệu"><span class="btn-icon">💾</span><span class="btn-label-full">Lưu dữ liệu</span><span class="btn-label-short">Lưu</span></button>
                             <span id="unsavedIndicator" class="hidden" style="font-size:0.7rem; font-weight:700; color:var(--color-amber);">● Chưa sao lưu</span>
                         </div>
                     </div>
                     
-                    <div class="search-bar" style="display:flex; align-items:center; gap:10px;">
-                        <input type="text" id="searchInput" class="search-input" placeholder="Nhập mã thiết bị, tên, hoặc model để lọc cây..." style="flex:1; width:auto;">
-                        <div style="display:flex; align-items:center; gap:6px; flex:1;">
-                            <label style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">⭐ Mức độ:</label>
-                            <select id="filterImportance" class="filter-select" style="flex:1;">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" class="search-input device-search-input" placeholder="Nhập mã thiết bị, tên, hoặc model để lọc cây...">
+                        <div class="device-importance-filter">
+                            <label class="importance-filter-label">⭐ Mức độ:</label>
+                            <select id="filterImportance" class="filter-select device-importance-select">
                                 <option value="all">Tất cả thiết bị</option>
                                 <option value="3">★★★ Rất quan trọng</option>
                                 <option value="2">★★ Quan trọng</option>
                                 <option value="1">★ Ít quan trọng</option>
                                 <option value="0">Chưa đánh giá</option>
+
                             </select>
                         </div>
                     </div>

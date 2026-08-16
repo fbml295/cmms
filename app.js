@@ -416,7 +416,7 @@
 
         // Mục 6: tiêu đề chính "HỆ THỐNG QUẢN LÝ BẢO TRÌ CMMS - {Dây chuyền}"
         function updateMainHeaderTitle() {
-            const el = document.getElementById('mainHeaderTitle');
+            const el = document.querySelector('#mainHeaderTitle .header-title-full');
             if (!el) return;
             const info = getCompanyInfo();
             const base = 'HỆ THỐNG QUẢN LÝ BẢO TRÌ CMMS';
