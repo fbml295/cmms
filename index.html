@@ -419,7 +419,14 @@
 
                 <!-- KANBAN BOARD -->
                 <div class="wo-kanban-wrap">
-                    <div class="wo-kanban">
+                    <!-- Dots indicator (chỉ hiện trên mobile) -->
+                    <div class="wo-slider-dots" id="woSliderDots">
+                        <button class="wo-dot active" onclick="woGoToSlide(0)" title="Chờ thực hiện"></button>
+                        <button class="wo-dot" onclick="woGoToSlide(1)" title="Đang thực hiện"></button>
+                        <button class="wo-dot" onclick="woGoToSlide(2)" title="Đã hoàn thành"></button>
+                    </div>
+
+                    <div class="wo-kanban" id="woKanban">
                         <div class="wo-col">
                             <div class="wo-col-header wo-col-pending">
                                 <span>Chờ thực hiện</span>

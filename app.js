@@ -148,7 +148,7 @@
             if (tab === 'rca') { closeRcaEditor(); renderRcaList(); }
             if (tab === 'fmea') { closeFmeaEditor(); renderFmeaList(); }
             if (tab === 'masterplan') { closeMasterCampaignDetail(); renderMasterPlanPage(); }   
-            if (tab === 'workorder') { initWorkOrderTab(); }
+            if (tab === 'workorder') { initWorkOrderTab(); woResetSlider(); }
             if (tab === 'config') renderCfgCompanyInfoPreview();
         }
 
@@ -671,3 +671,91 @@
         // Module Thiết bị, Kế hoạch, Dashboard đã tách ra file riêng:
         // xem device.js, plan.js, dashboard.js (load ngay sau app.js trong index.html)
         // ---------------------------------------------------------------
+
+        // ================================================================
+        // KANBAN SLIDER (mobile) — vuốt ngang chuyển cột, dots indicator
+        // ================================================================
+        let woSlideIndex = 0;       // 0=Chờ, 1=Đang, 2=Xong
+        const WO_SLIDE_COUNT = 3;
+
+        function woGoToSlide(idx) {
+            const kanban = document.getElementById('woKanban');
+            if (!kanban) return;
+
+            // Chỉ áp dụng trên mobile (khi .wo-slider-dots đang hiển thị)
+            const dots = document.getElementById('woSliderDots');
+            if (!dots || getComputedStyle(dots).display === 'none') return;
+
+            // Xoay vòng tròn
+            woSlideIndex = ((idx % WO_SLIDE_COUNT) + WO_SLIDE_COUNT) % WO_SLIDE_COUNT;
+            kanban.style.transform = `translateX(-${woSlideIndex * 33.333}%)`;
+
+            // Cập nhật dots
+            document.querySelectorAll('.wo-dot').forEach((d, i) => {
+                d.classList.toggle('active', i === woSlideIndex);
+            });
+        }
+
+        // Khởi tạo swipe gesture bằng Touch API (không cần thư viện ngoài)
+        function initWoSlider() {
+            const kanban = document.getElementById('woKanban');
+            if (!kanban) return;
+
+            let startX = 0, startY = 0, isDragging = false, isSwipeDecided = false, isHorizontal = false;
+
+            kanban.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                isSwipeDecided = false;
+                isHorizontal = false;
+            }, { passive: true });
+
+            kanban.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+
+                // Lần đầu di chuyển: xác định hướng vuốt (ngang hay dọc)
+                if (!isSwipeDecided && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+                    isSwipeDecided = true;
+                    isHorizontal = Math.abs(dx) > Math.abs(dy);
+                }
+
+                // Chỉ chặn sự kiện nếu đang vuốt ngang (tránh chặn cuộn dọc bên trong thẻ)
+                if (isHorizontal) e.preventDefault();
+            }, { passive: false });
+
+            kanban.addEventListener('touchend', (e) => {
+                if (!isDragging || !isHorizontal) { isDragging = false; return; }
+                const dx = e.changedTouches[0].clientX - startX;
+                isDragging = false;
+
+                // Ngưỡng tối thiểu 50px mới tính là vuốt — tránh chuyển cột khi chỉ tap nhẹ
+                const dots = document.getElementById('woSliderDots');
+                const isMobile = dots && getComputedStyle(dots).display !== 'none';
+                if (!isMobile) return;
+
+                if (dx < -50) {
+                    woGoToSlide(woSlideIndex + 1); // vuốt trái → cột tiếp theo
+                } else if (dx > 50) {
+                    woGoToSlide(woSlideIndex - 1); // vuốt phải → cột trước
+                }
+            }, { passive: true });
+        }
+
+        // Khởi tạo slider ngay khi DOM sẵn sàng; reset về cột 0 mỗi khi chuyển sang tab Việc ngày
+        document.addEventListener('DOMContentLoaded', () => {
+            initWoSlider();
+        });
+
+        // Reset slider về cột 0 khi mở tab Việc ngày (để luôn bắt đầu ở "Chờ thực hiện")
+        const _origInitWorkOrderTab = typeof initWorkOrderTab !== 'undefined' ? initWorkOrderTab : null;
+        // Hook được gọi trong switchMainTab → initWorkOrderTab() (workorder.js),
+        // nên ta chỉ cần reset index ở đây — woGoToSlide sẽ tự kiểm tra có đang ở mobile không.
+        function woResetSlider() {
+            woSlideIndex = 0;
+            const kanban = document.getElementById('woKanban');
+            if (kanban) kanban.style.transform = 'translateX(0%)';
+            document.querySelectorAll('.wo-dot').forEach((d, i) => d.classList.toggle('active', i === 0));
+        }

@@ -2122,6 +2122,7 @@
         .text-center { text-align: center; }
         .p-20 { padding: 20px; }
         .mini-plan-toggle-hint { display: none; } /* Chỉ hiện trên mobile — xem media query bên dưới */
+        .wo-slider-dots { display: none; } /* Chỉ hiện trên mobile — xem media query bên dưới */
 
         /* ===== TRANG CẤU HÌNH (Google Drive / Gemini AI) ===== */
         .config-page { width: 100%; max-width: 1180px; margin: 0 auto; padding: 18px 20px 40px; box-sizing: border-box; }
@@ -2413,9 +2414,46 @@
 
             /* Tab Việc ngày (Work Order): xếp 3 cột Kanban chồng dọc, mỗi cột giới hạn chiều cao + tự cuộn riêng,
                toàn khối cũng cuộn được để không bị cắt mất cột phía dưới */
-            .wo-kanban-wrap { flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 8px; gap: 10px; }
-            .wo-col { min-width: 100%; max-width: 100%; flex: none; }
-            .wo-col-body { max-height: 38vh; min-height: 60px; }
+            /* === KANBAN SLIDER (chỉ mobile) === */
+            .wo-kanban-wrap { flex-direction: column; overflow: hidden; padding: 0; gap: 0; position: relative; }
+            .wo-kanban {
+                display: flex;
+                flex-direction: row;
+                width: 300%;
+                flex: 1;
+                min-height: 0;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                will-change: transform;
+            }
+            .wo-col { min-width: 0; max-width: none; flex: 0 0 33.333%; width: 33.333%; overflow: hidden; }
+            .wo-col-body { max-height: none; height: 100%; overflow-y: auto; }
+
+            /* Dots indicator */
+            .wo-slider-dots {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 0 6px;
+                flex-shrink: 0;
+                background: var(--bg-panel-dark);
+                border-bottom: 1px solid var(--border-color);
+            }
+            .wo-dot {
+                width: 8px; height: 8px;
+                border-radius: 50%;
+                border: none;
+                background: var(--border-color);
+                cursor: pointer;
+                padding: 0;
+                transition: all 0.2s ease;
+            }
+            .wo-dot.active { width: 22px; border-radius: 4px; background: var(--color-sky); }
+            /* màu dot theo từng cột */
+            .wo-dot:nth-child(1).active { background: var(--color-amber); }
+            .wo-dot:nth-child(2).active { background: var(--color-sky); }
+            .wo-dot:nth-child(3).active { background: var(--color-emerald); }
+            /* wo-col và wo-col-body đã được định nghĩa trong slider CSS ở trên */
             .wo-toolbar { padding: 8px 10px; gap: 8px; }
             .wo-toolbar-left, .wo-toolbar-right { flex-wrap: wrap; }
             .wo-detail-panel {
