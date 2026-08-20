@@ -672,90 +672,79 @@
         // xem device.js, plan.js, dashboard.js (load ngay sau app.js trong index.html)
         // ---------------------------------------------------------------
 
+
         // ================================================================
-        // KANBAN SLIDER (mobile) — vuốt ngang chuyển cột, dots indicator
+        // KANBAN SLIDER (mobile) — CSS scroll-snap + IntersectionObserver
         // ================================================================
-        let woSlideIndex = 0;       // 0=Chờ, 1=Đang, 2=Xong
+        let woSlideIndex = 0;
         const WO_SLIDE_COUNT = 3;
+        let woSliderObserver = null;
 
-        function woGoToSlide(idx) {
-            const kanban = document.getElementById('woKanban');
-            if (!kanban) return;
-
-            // Chỉ áp dụng trên mobile (khi .wo-slider-dots đang hiển thị)
+        function isMobileSlider() {
             const dots = document.getElementById('woSliderDots');
-            if (!dots || getComputedStyle(dots).display === 'none') return;
+            return dots && getComputedStyle(dots).display !== 'none';
+        }
 
-            // Xoay vòng tròn
-            woSlideIndex = ((idx % WO_SLIDE_COUNT) + WO_SLIDE_COUNT) % WO_SLIDE_COUNT;
-            kanban.style.transform = `translateX(-${woSlideIndex * 33.333}%)`;
-
-            // Cập nhật dots
+        function woUpdateDots(idx) {
+            woSlideIndex = idx;
             document.querySelectorAll('.wo-dot').forEach((d, i) => {
-                d.classList.toggle('active', i === woSlideIndex);
+                d.classList.toggle('active', i === idx);
             });
         }
 
-        // Khởi tạo swipe gesture bằng Touch API (không cần thư viện ngoài)
-        function initWoSlider() {
+        // Bấm dot hoặc gọi programmatically → cuộn đến đúng cột
+        function woGoToSlide(idx) {
+            if (!isMobileSlider()) return;
             const kanban = document.getElementById('woKanban');
             if (!kanban) return;
-
-            let startX = 0, startY = 0, isDragging = false, isSwipeDecided = false, isHorizontal = false;
-
-            kanban.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                isDragging = true;
-                isSwipeDecided = false;
-                isHorizontal = false;
-            }, { passive: true });
-
-            kanban.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                const dx = e.touches[0].clientX - startX;
-                const dy = e.touches[0].clientY - startY;
-
-                // Lần đầu di chuyển: xác định hướng vuốt (ngang hay dọc)
-                if (!isSwipeDecided && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-                    isSwipeDecided = true;
-                    isHorizontal = Math.abs(dx) > Math.abs(dy);
-                }
-
-                // Chỉ chặn sự kiện nếu đang vuốt ngang (tránh chặn cuộn dọc bên trong thẻ)
-                if (isHorizontal) e.preventDefault();
-            }, { passive: false });
-
-            kanban.addEventListener('touchend', (e) => {
-                if (!isDragging || !isHorizontal) { isDragging = false; return; }
-                const dx = e.changedTouches[0].clientX - startX;
-                isDragging = false;
-
-                // Ngưỡng tối thiểu 50px mới tính là vuốt — tránh chuyển cột khi chỉ tap nhẹ
-                const dots = document.getElementById('woSliderDots');
-                const isMobile = dots && getComputedStyle(dots).display !== 'none';
-                if (!isMobile) return;
-
-                if (dx < -50) {
-                    woGoToSlide(woSlideIndex + 1); // vuốt trái → cột tiếp theo
-                } else if (dx > 50) {
-                    woGoToSlide(woSlideIndex - 1); // vuốt phải → cột trước
-                }
-            }, { passive: true });
+            // Xoay vòng
+            idx = ((idx % WO_SLIDE_COUNT) + WO_SLIDE_COUNT) % WO_SLIDE_COUNT;
+            const cols = kanban.querySelectorAll('.wo-col');
+            if (cols[idx]) {
+                cols[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+            }
+            woUpdateDots(idx);
         }
 
-        // Khởi tạo slider ngay khi DOM sẵn sàng; reset về cột 0 mỗi khi chuyển sang tab Việc ngày
-        document.addEventListener('DOMContentLoaded', () => {
-            initWoSlider();
-        });
-
-        // Reset slider về cột 0 khi mở tab Việc ngày (để luôn bắt đầu ở "Chờ thực hiện")
-        const _origInitWorkOrderTab = typeof initWorkOrderTab !== 'undefined' ? initWorkOrderTab : null;
-        // Hook được gọi trong switchMainTab → initWorkOrderTab() (workorder.js),
-        // nên ta chỉ cần reset index ở đây — woGoToSlide sẽ tự kiểm tra có đang ở mobile không.
+        // Reset về cột 0 (không animation) khi mở tab
         function woResetSlider() {
-            woSlideIndex = 0;
             const kanban = document.getElementById('woKanban');
-            if (kanban) kanban.style.transform = 'translateX(0%)';
-            document.querySelectorAll('.wo-dot').forEach((d, i) => d.classList.toggle('active', i === 0));
+            if (!kanban) return;
+            kanban.scrollLeft = 0;
+            woUpdateDots(0);
         }
+
+        // IntersectionObserver: tự phát hiện cột nào đang chiếm >50% viewport → cập nhật dots
+        function initWoSliderObserver() {
+            if (woSliderObserver) { woSliderObserver.disconnect(); woSliderObserver = null; }
+            if (!isMobileSlider()) return;
+
+            const kanban = document.getElementById('woKanban');
+            if (!kanban) return;
+            const cols = kanban.querySelectorAll('.wo-col');
+
+            woSliderObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                        const idx = [...cols].indexOf(entry.target);
+                        if (idx !== -1) woUpdateDots(idx);
+                    }
+                });
+            }, {
+                root: kanban,
+                threshold: 0.5
+            });
+
+            cols.forEach(col => woSliderObserver.observe(col));
+        }
+
+        // Khởi tạo khi DOM sẵn sàng
+        document.addEventListener('DOMContentLoaded', () => {
+            // Khởi tạo observer sau 1 frame để đảm bảo CSS đã render xong
+            requestAnimationFrame(() => initWoSliderObserver());
+
+            // Tái khởi tạo khi resize (đổi landscape/portrait, hoặc mở DevTools)
+            window.addEventListener('resize', () => {
+                requestAnimationFrame(() => initWoSliderObserver());
+            });
+        });

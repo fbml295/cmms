@@ -2419,14 +2419,24 @@
             .wo-kanban {
                 display: flex;
                 flex-direction: row;
-                width: 300%;
                 flex: 1;
                 min-height: 0;
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                will-change: transform;
+                overflow-x: scroll;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
             }
-            .wo-col { min-width: 0; max-width: none; flex: 0 0 33.333%; width: 33.333%; overflow: hidden; }
-            .wo-col-body { max-height: none; height: 100%; overflow-y: auto; }
+            .wo-kanban::-webkit-scrollbar { display: none; }
+            .wo-col {
+                flex: 0 0 100%;
+                width: 100%;
+                min-width: 0;
+                max-width: none;
+                scroll-snap-align: start;
+                scroll-snap-stop: always;
+                overflow: hidden;
+            }
+            .wo-col-body { max-height: none; height: 100%; overflow-y: auto; overscroll-behavior-y: contain; }
 
             /* Dots indicator */
             .wo-slider-dots {
@@ -2448,8 +2458,7 @@
                 padding: 0;
                 transition: all 0.2s ease;
             }
-            .wo-dot.active { width: 22px; border-radius: 4px; background: var(--color-sky); }
-            /* màu dot theo từng cột */
+            .wo-dot.active { width: 22px; border-radius: 4px; }
             .wo-dot:nth-child(1).active { background: var(--color-amber); }
             .wo-dot:nth-child(2).active { background: var(--color-sky); }
             .wo-dot:nth-child(3).active { background: var(--color-emerald); }
