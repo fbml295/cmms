@@ -2425,6 +2425,7 @@
                 scroll-snap-type: x mandatory;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
+                touch-action: pan-x; /* Tầng ngoài chỉ xử lý vuốt NGANG (chuyển cột) — không tranh chấp với vuốt dọc bên trong */
             }
             .wo-kanban::-webkit-scrollbar { display: none; }
             .wo-col {
@@ -2435,8 +2436,25 @@
                 scroll-snap-align: start;
                 scroll-snap-stop: always;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
-            .wo-col-body { max-height: none; height: 100%; overflow-y: auto; overscroll-behavior-y: contain; }
+            /* Tiêu đề cột ("Chờ thực hiện"/"Đang thực hiện"/"Đã hoàn thành") cố định ở đầu cột,
+               không cuộn theo danh sách lệnh công việc bên dưới */
+            .wo-col-header {
+                position: sticky;
+                top: 0;
+                z-index: 3;
+                flex-shrink: 0;
+            }
+            .wo-col-body {
+                max-height: none;
+                height: 100%;
+                overflow-y: auto;
+                overscroll-behavior-y: contain;
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y; /* Tầng trong chỉ xử lý vuốt DỌC (cuộn danh sách) — vuốt 1 ngón sẽ ăn ngay */
+            }
 
             /* Dots indicator */
             .wo-slider-dots {
