@@ -2222,6 +2222,47 @@
         .chatbot-send-btn { background: var(--color-sky); border: none; color: white; border-radius: 8px; width: 38px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .chatbot-send-btn:hover { filter: brightness(1.15); }
 
+        /* ===== BỘ LỌC CA / NHÂN SỰ THU GỌN (WORK ORDER) — hiển thị icon, phần chữ chỉ đọc khi mở dropdown ===== */
+        /* Áp dụng mọi kích thước màn hình để tiêu đề tab luôn gọn trên 1 hàng cùng nút "+ Thêm" */
+        .wo-filter-iconized {
+            position: relative;
+            width: 40px;
+            height: 34px;
+            flex-shrink: 0;
+        }
+        .wo-filter-iconized::before {
+            content: attr(data-icon);
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .wo-filter-iconized select {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            border-radius: 6px;
+            background-color: var(--bg-panel-dark);
+            border: 1px solid var(--border-color);
+            color: transparent;
+            text-align: center;
+            text-align-last: center;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        .wo-create-btn {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
         /* ================= RESPONSIVE: ĐIỆN THOẠI & IPAD (≤ 900px) ================= */
         @media (max-width: 900px) {
             .mobile-menu-btn { display: flex; }
@@ -2412,6 +2453,10 @@
             .section-title { font-size: 0.78rem; }
             .subtab-bar { flex-wrap: wrap; }
 
+            /* Toolbar Việc ngày: 1 hàng gọn, không xuống dòng — bộ lọc icon + nút Thêm nằm cùng hàng */
+            .wo-toolbar-right { flex-wrap: nowrap; gap: 6px; }
+            .wo-create-btn { padding: 6px 10px !important; font-size: 0.75rem !important; }
+
             /* Tab Việc ngày (Work Order): xếp 3 cột Kanban chồng dọc, mỗi cột giới hạn chiều cao + tự cuộn riêng,
                toàn khối cũng cuộn được để không bị cắt mất cột phía dưới */
             /* === KANBAN SLIDER (chỉ mobile) === */
@@ -2482,7 +2527,7 @@
             .wo-dot:nth-child(3).active { background: var(--color-emerald); }
             /* wo-col và wo-col-body đã được định nghĩa trong slider CSS ở trên */
             .wo-toolbar { padding: 8px 10px; gap: 8px; }
-            .wo-toolbar-left, .wo-toolbar-right { flex-wrap: wrap; }
+            .wo-toolbar-left { flex-wrap: wrap; }
             .wo-detail-panel {
                 position: fixed;
                 left: 0; right: 0; bottom: 0;

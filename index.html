@@ -397,19 +397,22 @@
                         <span id="woDateDisplay" class="wo-date-display"></span>
                     </div>
                     <div class="wo-toolbar-right">
-                        <select id="woShiftFilter" class="filter-select" onchange="renderWorkOrderPage()">
-                            <option value="all">Tất cả ca</option>
-                            <option value="ca1">Ca 1</option>
-                            <option value="ca2">Ca 2</option>
-                            <option value="ca3">Ca 3</option>
-                            <option value="hc">Hành chính</option>
-                        </select>
-                        <select id="woPersonFilter" class="filter-select" onchange="renderWorkOrderPage()">
-                            <option value="all">Tất cả nhân sự</option>
-                        </select>
-                        <button class="btn btn-sky" style="padding:6px 14px; font-size:0.8rem;" onclick="openCreateWorkOrder()">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            Tạo lệnh công việc
+                        <div class="wo-filter-iconized" data-icon="⏰" title="Lọc theo ca">
+                            <select id="woShiftFilter" class="filter-select" aria-label="Lọc theo ca" onchange="renderWorkOrderPage()">
+                                <option value="all">Tất cả ca</option>
+                                <option value="ca1">Ca 1</option>
+                                <option value="ca2">Ca 2</option>
+                                <option value="ca3">Ca 3</option>
+                                <option value="hc">Hành chính</option>
+                            </select>
+                        </div>
+                        <div class="wo-filter-iconized" data-icon="👤" title="Lọc theo nhân sự">
+                            <select id="woPersonFilter" class="filter-select" aria-label="Lọc theo nhân sự" onchange="renderWorkOrderPage()">
+                                <option value="all">Tất cả nhân sự</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-sky wo-create-btn" style="padding:6px 14px; font-size:0.8rem;" onclick="openCreateWorkOrder()">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="btn-label-full">Tạo lệnh công việc</span><span class="btn-label-short">Thêm</span>
                         </button>
                     </div>
                 </div>
